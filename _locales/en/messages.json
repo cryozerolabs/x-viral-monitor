@@ -246,6 +246,18 @@
   "flashStarChartOff": {
     "message": "Star chart disabled"
   },
+  "featureBookmarkCountTitle": {
+    "message": "🔖 Show bookmark count"
+  },
+  "featureBookmarkCountDesc": {
+    "message": "Display the bookmark count next to each tweet's bookmark button on the timeline."
+  },
+  "flashBookmarkCountOn": {
+    "message": "Bookmark count enabled"
+  },
+  "flashBookmarkCountOff": {
+    "message": "Bookmark count disabled"
+  },
   "contentStarChartTitleLabel": {
     "message": "VELOCITY MONITOR"
   },

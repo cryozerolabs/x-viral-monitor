@@ -244,6 +244,18 @@
   "flashStarChartOff": {
     "message": "已关闭星图功能"
   },
+  "featureBookmarkCountTitle": {
+    "message": "🔖 显示书签收藏数"
+  },
+  "featureBookmarkCountDesc": {
+    "message": "在时间线推文的书签按钮旁显示被收藏的数量。"
+  },
+  "flashBookmarkCountOn": {
+    "message": "已开启书签数显示"
+  },
+  "flashBookmarkCountOff": {
+    "message": "已关闭书签数显示"
+  },
   "contentStarChartTitleLabel": {
     "message": "速度监测"
   },

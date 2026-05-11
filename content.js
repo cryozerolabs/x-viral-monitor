@@ -50,6 +50,7 @@ let leaderboardColumns = DEFAULT_LB_COLUMNS.map((c) => ({ ...c }));
 let badgeStyle = 'pill-solid';
 let copyAsMarkdownEnabled = true;
 let starChartEnabled = true;
+let showBookmarkCount = true;
 
 function applyBadgeStyle() {
   document.documentElement.dataset.xvmBadgeStyle = badgeStyle;
@@ -64,6 +65,14 @@ window.addEventListener('message', (event) => {
   velocityThresholds = normalizeThresholds(event.data.thresholds);
   badgeStyle = event.data.badgeStyle === 'inline-classic' ? 'inline-classic' : 'pill-solid';
   applyBadgeStyle();
+  // Apply showBookmarkCount BEFORE renderBadges so the very first
+  // post-load render respects the persisted setting — otherwise the
+  // counts flash in and out when the user had toggled them off.
+  const prevShowBookmark = showBookmarkCount;
+  showBookmarkCount = event.data.showBookmarkCount !== false;
+  if (prevShowBookmark && !showBookmarkCount) {
+    document.querySelectorAll('.xvm-bookmark-count').forEach((el) => el.remove());
+  }
   document.querySelectorAll('article[data-xvm-scored]').forEach((article) => {
     article.removeAttribute('data-xvm-scored');
   });
@@ -579,8 +588,101 @@ function renderBadges() {
     headerRow.insertBefore(badge, headerRow.lastElementChild);
   }
 
+  renderBookmarkCounts();
   if (leaderboardEnabled) renderLeaderboard();
 }
+
+// Inject a bookmark count next to each tweet's bookmark button. X hides
+// this number from the timeline action bar (only exposed via the group's
+// aria-label and the analytics page), so we clone the counter wrapper
+// from a sibling action button to inherit Twitter's current typography
+// classes exactly, then rewrite the leaf text.
+function renderBookmarkCounts() {
+  if (!showBookmarkCount) return;
+
+  const articles = document.querySelectorAll('article[data-testid="tweet"]');
+  for (const article of articles) {
+    const tweetId = getTweetIdFromArticle(article);
+    if (!tweetId) continue;
+    const data = tweetDataStore.get(tweetId);
+    if (!data) continue;
+
+    const bookmarkBtn = article.querySelector(
+      'button[data-testid="bookmark"], button[data-testid="removeBookmark"]'
+    );
+    if (!bookmarkBtn) continue;
+
+    // On the status detail page X renders its own bookmark counter — skip
+    // injection there, otherwise the number shows up twice.
+    const nativeCounter = bookmarkBtn.querySelector('.r-1udh08x:not(.xvm-bookmark-count)');
+    if (nativeCounter) {
+      const ours = bookmarkBtn.querySelector('.xvm-bookmark-count');
+      if (ours) ours.remove();
+      continue;
+    }
+
+    const count = Math.max(0, data.bookmarks | 0);
+    const formatted = count > 0 ? formatViews(count) : '';
+
+    const existing = bookmarkBtn.querySelector(':scope .xvm-bookmark-count');
+    if (existing) {
+      if (existing.dataset.value !== String(count)) {
+        existing.dataset.value = String(count);
+        const leaf = existing.querySelector('.xvm-bookmark-count-text');
+        if (leaf) leaf.textContent = formatted;
+      }
+      continue;
+    }
+
+    const group = bookmarkBtn.closest('[role="group"]');
+    if (!group) continue;
+    let template = null;
+    for (const sib of group.querySelectorAll(
+      'button[data-testid="reply"], button[data-testid="like"], button[data-testid="unlike"], a[href$="/analytics"]'
+    )) {
+      const c = sib.querySelector('.r-1udh08x');
+      if (c) { template = c; break; }
+    }
+    if (!template) continue;
+
+    const cloned = template.cloneNode(true);
+    cloned.classList.add('xvm-bookmark-count');
+    cloned.dataset.value = String(count);
+    cloned.querySelectorAll('[data-testid]').forEach((n) => n.removeAttribute('data-testid'));
+
+    const leaves = Array.from(cloned.querySelectorAll('span')).filter((s) => s.children.length === 0);
+    const leaf = leaves[leaves.length - 1];
+    if (leaf) {
+      leaf.textContent = formatted;
+      leaf.classList.add('xvm-bookmark-count-text');
+    } else {
+      cloned.textContent = formatted;
+      cloned.classList.add('xvm-bookmark-count-text');
+    }
+
+    const inner = bookmarkBtn.querySelector(':scope > div');
+    (inner || bookmarkBtn).appendChild(cloned);
+  }
+}
+
+// Optimistic bump on the user's own bookmark/unbookmark click — X swaps
+// the testid between "bookmark" and "removeBookmark" instantly but the
+// new total only arrives on the next API refresh. We bump the store and
+// re-render so the displayed number tracks the user's intent.
+document.addEventListener('click', (e) => {
+  if (!showBookmarkCount) return;
+  const btn = e.target.closest?.('button[data-testid="bookmark"], button[data-testid="removeBookmark"]');
+  if (!btn) return;
+  const article = btn.closest('article[data-testid="tweet"]');
+  if (!article) return;
+  const tweetId = getTweetIdFromArticle(article);
+  if (!tweetId) return;
+  const data = tweetDataStore.get(tweetId);
+  if (!data) return;
+  const delta = btn.getAttribute('data-testid') === 'removeBookmark' ? -1 : 1;
+  data.bookmarks = Math.max(0, (data.bookmarks | 0) + delta);
+  setTimeout(() => renderBookmarkCounts(), 0);
+}, true);
 
 // === Velocity Leaderboard ===
 let leaderboardEl = null;

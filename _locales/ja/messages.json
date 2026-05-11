@@ -244,6 +244,18 @@
   "flashStarChartOff": {
     "message": "スターチャートを無効化"
   },
+  "featureBookmarkCountTitle": {
+    "message": "🔖 ブックマーク数を表示"
+  },
+  "featureBookmarkCountDesc": {
+    "message": "タイムライン上の各ツイートのブックマークボタン横にブックマーク数を表示します。"
+  },
+  "flashBookmarkCountOn": {
+    "message": "ブックマーク数の表示を有効化"
+  },
+  "flashBookmarkCountOff": {
+    "message": "ブックマーク数の表示を無効化"
+  },
   "contentStarChartTitleLabel": {
     "message": "ベロシティモニター"
   },
