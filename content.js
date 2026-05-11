@@ -65,6 +65,14 @@ window.addEventListener('message', (event) => {
   velocityThresholds = normalizeThresholds(event.data.thresholds);
   badgeStyle = event.data.badgeStyle === 'inline-classic' ? 'inline-classic' : 'pill-solid';
   applyBadgeStyle();
+  // Apply showBookmarkCount BEFORE renderBadges so the very first
+  // post-load render respects the persisted setting — otherwise the
+  // counts flash in and out when the user had toggled them off.
+  const prevShowBookmark = showBookmarkCount;
+  showBookmarkCount = event.data.showBookmarkCount !== false;
+  if (prevShowBookmark && !showBookmarkCount) {
+    document.querySelectorAll('.xvm-bookmark-count').forEach((el) => el.remove());
+  }
   document.querySelectorAll('article[data-xvm-scored]').forEach((article) => {
     article.removeAttribute('data-xvm-scored');
   });
@@ -95,16 +103,6 @@ window.addEventListener('message', (event) => {
 
   copyAsMarkdownEnabled = event.data.featureCopyAsMarkdown !== false;
   starChartEnabled = event.data.featureStarChart !== false;
-
-  const nextShowBookmark = event.data.showBookmarkCount !== false;
-  if (nextShowBookmark !== showBookmarkCount) {
-    showBookmarkCount = nextShowBookmark;
-    if (!showBookmarkCount) {
-      document.querySelectorAll('.xvm-bookmark-count').forEach((el) => el.remove());
-    } else {
-      renderBookmarkCounts();
-    }
-  }
 });
 
 window.postMessage({ type: 'XVM_REQUEST_SETTINGS' }, '*');
