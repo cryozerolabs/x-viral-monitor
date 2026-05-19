@@ -68,7 +68,7 @@ const CONTENT_MESSAGE_KEYS = [
 ];
 
 const DEFAULT_FEATURES = {
-  featureVelocityLeaderboard: false,
+  featureVelocityLeaderboard: true,
   featureCopyAsMarkdown: true,
   featureStarChart: true,
   showBookmarkCount: true,

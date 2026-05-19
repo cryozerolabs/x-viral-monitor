@@ -29,18 +29,19 @@
   }
 
   // === Settings ===
-  // Step 1 stub: hardcoded defaults; step C wires popup → chrome.storage →
-  // updateSettings(). Numbers chosen to match #42 PoC defaults.
-  //
-  // enabled defaults to FALSE per user decision (2026-05-19 #45): users
-  // opt in via popup, never get surprised by hidden tweets. Step C popup
-  // will surface a toggle and persist it.
+  // Defaults locked 2026-05-19 popup-redesign (Accordion C + minimal shadcn):
+  //   - enabled: false (opt-in; users never get surprised by hidden tweets)
+  //   - thresholds bumped after user testing showed 50/10/2000 was too
+  //     aggressive on quiet timelines; new 1000/1000/10000/10000 keeps
+  //     virality-actually-passing tweets only.
+  // popup-rate-filter.js DEFAULTS mirror these values; contract test pins
+  // both files identical.
   let SETTINGS = {
     enabled: false,
-    shortRateThreshold: 50,
+    shortRateThreshold: 1000,
     shortAbsoluteThreshold: 10000,
-    longRateThreshold: 10,
-    longAbsoluteThreshold: 2000,
+    longRateThreshold: 1000,
+    longAbsoluteThreshold: 10000,
     scopeHome: true,
     scopeList: true,
   };

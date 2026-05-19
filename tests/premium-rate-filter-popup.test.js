@@ -31,16 +31,25 @@ describe('#45 rate-filter popup settings (dev1 gap fix)', () => {
     ).toBe(true);
   });
 
-  it('popup-rate-filter.js defaults match locked decisions (#45)', () => {
+  it('popup-rate-filter.js defaults match locked decisions (2026-05-19 popup redesign)', () => {
     // enabled defaults to false (opt-in)
     expect(/enabled:\s*false/.test(popupRf),
       'default enabled must be false (opt-in per locked decision)'
     ).toBe(true);
-    // Short: 50 / 10000, Long: 10 / 2000 (PoC defaults)
-    expect(/shortRateThreshold:\s*50/.test(popupRf)).toBe(true);
-    expect(/shortAbsoluteThreshold:\s*10000/.test(popupRf)).toBe(true);
-    expect(/longRateThreshold:\s*10/.test(popupRf)).toBe(true);
-    expect(/longAbsoluteThreshold:\s*2000/.test(popupRf)).toBe(true);
+    // Short: 1000 / 10000, Long: 1000 / 10000 (bumped from PoC after user
+    // testing — see filter.js header comment).
+    expect(/shortRateThreshold:\s*1000\b/.test(popupRf)).toBe(true);
+    expect(/shortAbsoluteThreshold:\s*10000\b/.test(popupRf)).toBe(true);
+    expect(/longRateThreshold:\s*1000\b/.test(popupRf)).toBe(true);
+    expect(/longAbsoluteThreshold:\s*10000\b/.test(popupRf)).toBe(true);
+  });
+
+  it('filter.js SETTINGS defaults match popup-rate-filter.js DEFAULTS (mirror)', () => {
+    const filter = readFileSync(resolve(repo, 'src/premium/rate-filter/filter.js'), 'utf8');
+    expect(/shortRateThreshold:\s*1000\b/.test(filter)).toBe(true);
+    expect(/shortAbsoluteThreshold:\s*10000\b/.test(filter)).toBe(true);
+    expect(/longRateThreshold:\s*1000\b/.test(filter)).toBe(true);
+    expect(/longAbsoluteThreshold:\s*10000\b/.test(filter)).toBe(true);
   });
 
   it('popup-rate-filter.js is tier-aware (locks form when free)', () => {

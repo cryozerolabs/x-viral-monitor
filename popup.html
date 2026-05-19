@@ -5,550 +5,464 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>X Viral Monitor</title>
   <style>
+    /*
+     * shadcn-style minimal dark theme (path B from
+     * docs/popup-ui-framework-eval.md, locked 2026-05-19).
+     * Zero build, zero deps, hand-written tokens mirroring shadcn's
+     * neutral palette + cyan accent. Accordion uses native <details>
+     * so no JS state machine.
+     */
     :root {
-      --bg: #f4efe5;
-      --card: rgba(255, 252, 246, 0.95);
-      --line: rgba(86, 60, 34, 0.18);
-      --text: #24180f;
-      --muted: #6e5b4d;
-      --accent: #bf5a2a;
-      --accent-strong: #8f3d17;
+      --bg:         #020617;  /* slate-950 */
+      --surface:   #0f172a;   /* slate-900 */
+      --surface-2: #1e293b;   /* slate-800 */
+      --border:    #1e293b;   /* slate-800 */
+      --border-hi: #334155;   /* slate-700 */
+      --text:      #f8fafc;   /* slate-50  */
+      --text-2:    #cbd5e1;   /* slate-300 */
+      --muted:     #64748b;   /* slate-500 */
+      --accent:    #06b6d4;   /* cyan-500  */
+      --accent-2:  #0891b2;   /* cyan-600  */
+      --accent-hi: #22d3ee;   /* cyan-400  */
+      --danger:    #f87171;   /* red-400   */
+      --ok:        #4ade80;   /* green-400 */
+      --warn:      #fbbf24;   /* amber-400 */
+
+      --radius:    10px;
+      --radius-sm: 6px;
+
+      /* Legacy aliases — kept so existing .xvm-pro-* / .rf-* / .cc-*
+         rules still pick up the dark theme without per-rule rewrites. */
+      --card: var(--surface);
+      --line: var(--border);
+      --accent-strong: var(--accent-hi);
     }
+
     * { box-sizing: border-box; margin: 0; }
     body {
-      width: 320px;
-      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      width: 340px;
+      font-family: "Inter", "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
       font-size: 13px;
       color: var(--text);
       background: var(--bg);
     }
-    .popup { padding: 16px; }
+    .popup { padding: 14px; }
 
-    h1 { font-size: 16px; margin-bottom: 4px; }
-    .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+    h1 {
+      font-size: 15px;
+      letter-spacing: 0.01em;
+      display: flex; align-items: center; gap: 6px;
+    }
+    h1 .logo { font-size: 18px; }
+    .subtitle { font-size: 11px; color: var(--muted); margin: 2px 0 12px; }
 
-    .info-box {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
+    /* === Accordion (native <details>) === */
+    details.acc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin: 0 0 10px;
+      overflow: hidden;
+    }
+    details.acc[open] { border-color: var(--border-hi); }
+    details.acc > summary {
+      list-style: none;
+      cursor: pointer;
       padding: 10px 12px;
-      margin-bottom: 14px;
-      font-size: 12px;
-      line-height: 1.6;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600;
+      user-select: none;
+    }
+    details.acc > summary::-webkit-details-marker { display: none; }
+    details.acc > summary::after {
+      content: "›";
+      margin-left: auto;
+      transition: transform 200ms ease;
       color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
     }
-    .info-box .tier {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin: 4px 0;
+    details.acc[open] > summary::after { transform: rotate(90deg); }
+    details.acc > summary:hover { background: var(--surface-2); }
+    details.acc > summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
     }
-    .tier .icon { font-size: 14px; }
-    .tier .label { font-weight: 600; color: var(--text); min-width: 50px; }
-    .tier .range { color: var(--muted); }
+    details.acc .acc-body {
+      padding: 4px 12px 12px;
+      border-top: 1px solid var(--border);
+    }
+    details.acc .acc-summary-sub {
+      font-size: 11px; font-weight: 400; color: var(--muted);
+      margin-left: 6px;
+    }
 
-    .divider {
-      height: 1px;
-      background: var(--line);
-      margin: 12px 0;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-    .field span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-    }
-    .field input {
-      width: 100%;
-      min-width: 0;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font: inherit;
-      color: var(--text);
-      background: rgba(255,255,255,0.85);
-    }
-    .field input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .field textarea {
-      width: 100%;
-      min-width: 0;
-      min-height: 96px;
-      resize: vertical;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font: inherit;
-      line-height: 1.5;
-      color: var(--text);
-      background: rgba(255,255,255,0.85);
-    }
-    .field textarea:focus {
-      outline: none;
-      border-color: var(--accent);
+    /* === Form primitives === */
+    label.field {
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 12px; color: var(--text-2);
+      margin: 8px 0;
     }
     .row { display: flex; gap: 8px; }
-    .row .field {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-
-    .actions { display: flex; gap: 8px; margin-top: 6px; }
-    .actions.compact button {
-      padding: 7px 0;
-      font-size: 12px;
-      border-radius: 8px;
-    }
-    button {
-      flex: 1;
-      padding: 8px 0;
-      border: none;
-      border-radius: 999px;
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      color: #fff8f1;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-    }
-    button:hover { opacity: 0.9; }
-    button#reset {
-      color: var(--text);
-      background: rgba(36, 24, 15, 0.08);
-    }
-    button#reset,
-    button#grok-prompt-reset {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid var(--line);
-    }
-    .status-msg {
-      font-size: 11px;
-      color: var(--accent);
-      margin-top: 6px;
-      min-height: 1.2em;
-    }
-
-    .feature-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 12px;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      margin-bottom: 12px;
-    }
-    .feature-row input[type="checkbox"] {
-      margin-top: 2px;
-      accent-color: var(--accent);
-      width: 14px;
-      height: 14px;
-      flex-shrink: 0;
-    }
-    .feature-row .ft-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-    .feature-row .ft-desc {
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .feature-row .ft-body { flex: 1; min-width: 0; }
-    .feature-row label { cursor: pointer; display: block; }
-    .feature-row.grok-template {
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.78);
-    }
-    .feature-row.grok-template .field textarea {
-      border-radius: 8px;
-      background: #fff;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
-    }
-    .feature-row.grok-template .inline-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 8px 0;
-      cursor: pointer;
-      font-size: 13px;
-      color: var(--text);
-    }
-    .feature-row.grok-template .inline-toggle input { margin: 0; }
-    .grok-template-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .grok-template-grid select,
-    .grok-template-grid input {
-      width: 100%;
-      min-width: 0;
-      padding: 7px 8px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      font: inherit;
-      font-size: 12px;
-      color: var(--text);
-      background: #fff;
-    }
-    .grok-template-grid select:focus,
-    .grok-template-grid input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .ft-lb-count {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .ft-lb-count input {
-      width: 52px;
-      padding: 4px 6px;
-      font: inherit;
-      font-size: 11px;
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      text-align: center;
-    }
-    .ft-lb-count input:focus { outline: none; border-color: var(--accent); }
-
-    .ft-lb-cols { margin-top: 10px; }
-    .ft-lb-cols-hint {
-      font-size: 10px;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-    .col-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .col-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .row > .field { flex: 1; }
+    input[type="number"], input[type="text"], select, textarea {
       padding: 6px 8px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+      border-color: transparent;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    select { background: var(--bg); }
+
+    button {
+      padding: 6px 12px;
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 120ms, border-color 120ms;
+    }
+    button:hover  { background: var(--border-hi); border-color: var(--muted); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0b1120;
+    }
+    button.primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+    .actions.compact button { padding: 4px 10px; font-size: 11px; }
+    .status-msg { font-size: 11px; min-height: 14px; color: var(--ok); margin-top: 6px; }
+
+    .divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* === Tier legend / info-box === */
+    .info-box {
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 11.5px;
+      color: var(--text-2);
+    }
+    .info-box .tier { display: flex; gap: 6px; margin: 2px 0; }
+    .info-box .tier .icon { width: 18px; text-align: center; }
+    .info-box .tier .label { flex: 1; }
+    .info-box .tier .range { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* === Feature row === */
+    .feature-row {
+      display: flex; gap: 8px; align-items: flex-start;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+    }
+    .feature-row:first-of-type { border-top: 0; }
+    .feature-row input[type="checkbox"] { margin-top: 2px; }
+    .ft-body { flex: 1; }
+    .ft-title { font-size: 12.5px; font-weight: 600; color: var(--text); }
+    .ft-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+
+    .ft-lb-count, .ft-lb-cols, .ft-lb-reset {
+      margin-top: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    }
+    .ft-lb-count input[type="number"] { width: 56px; padding: 3px 5px; text-align: right; }
+    .ft-lb-cols-hint { font-size: 10.5px; color: var(--muted); }
+    .col-list { list-style: none; padding: 0; margin: 4px 0; display: flex; flex-direction: column; gap: 3px; flex-basis: 100%; }
+    .col-list li {
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 6px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 4px;
       font-size: 11px;
       cursor: grab;
-      user-select: none;
-      transition: background 0.12s, border-color 0.12s, transform 0.12s;
     }
-    .col-item:active { cursor: grabbing; }
-    .col-item.dragging {
-      opacity: 0.4;
-      border-color: var(--accent);
+    .col-list li.dragging { opacity: 0.5; }
+    .ft-lb-reset-btn {
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hi); background: var(--surface-2); color: var(--text-2);
+      font-size: 11.5px; cursor: pointer;
     }
-    .col-item.drag-over {
-      border-color: var(--accent);
-      background: rgba(191, 90, 42, 0.08);
-    }
-    .col-item .col-grip {
-      color: #9b877a;
-      font-size: 12px;
-      letter-spacing: -2px;
-      pointer-events: none;
-    }
-    .col-item input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 12px;
-      height: 12px;
-      margin: 0;
-      pointer-events: auto;
-    }
-    .col-item .col-name {
-      flex: 1;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .col-item.col-hidden .col-name { color: var(--muted); }
+    .ft-lb-reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .ft-lb-reset-msg { font-size: 11px; color: var(--ok); }
 
-    .field select {
-      width: 100%;
-      min-width: 0;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font: inherit;
-      color: var(--text);
-      background: rgba(255,255,255,0.85);
-      appearance: auto;
+    .grok-template .grok-template-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;
     }
-    .field select:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    .inline-toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 6px 0; color: var(--text-2); }
 
-    /* XVM Pro tier banner + activation (#45 step 3) */
-    #xvm-pro-section { margin: 0 0 14px; }
+    /* === Pro section (rendered by popup-pro.js) === */
+    #xvm-pro-section { padding: 0; }
     .xvm-pro-banner {
       display: flex; align-items: center; gap: 6px;
-      padding: 8px 10px; border-radius: 8px;
-      background: linear-gradient(135deg, #f5e6d2, #f8d7a3);
-      border: 1px solid var(--line);
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px solid var(--border-hi);
       font-weight: 600; font-size: 13px;
     }
     #xvm-pro-section[data-tier="pro"] .xvm-pro-banner {
-      background: linear-gradient(135deg, #d6ebff, #b3d8ff);
+      background: linear-gradient(135deg, #0e7490, #155e75);
+      border-color: var(--accent);
+      color: var(--text);
     }
     #xvm-pro-section[data-tier="trial"] .xvm-pro-banner {
-      background: linear-gradient(135deg, #fff3d6, #ffe1a3);
+      background: linear-gradient(135deg, #78350f, #7c2d12);
+      border-color: var(--warn);
     }
     .xvm-pro-nudge {
-      margin-top: 6px; padding: 6px 8px; border-radius: 6px;
-      background: #fff4e6; color: var(--accent-strong);
-      font-size: 11px; border: 1px dashed var(--accent);
+      margin-top: 6px; padding: 6px 8px; border-radius: var(--radius-sm);
+      background: rgba(251, 191, 36, 0.08); color: var(--warn);
+      font-size: 11px; border: 1px dashed var(--warn);
     }
-    .xvm-pro-cta {
-      display: flex; gap: 6px; margin-top: 8px;
-    }
+    .xvm-pro-cta { display: flex; gap: 6px; margin-top: 8px; }
     .xvm-pro-btn, .xvm-pro-btn-primary, .xvm-pro-btn-ghost {
       flex: 1; text-align: center;
-      padding: 6px 8px; border-radius: 6px;
-      border: 1px solid var(--accent);
-      background: #fff; color: var(--accent-strong);
+      padding: 6px 8px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hi); background: var(--surface-2); color: var(--text);
       font-size: 12px; font-weight: 600;
       text-decoration: none; cursor: pointer;
     }
-    .xvm-pro-btn-primary {
-      background: var(--accent); color: #fff;
-    }
-    .xvm-pro-btn-ghost {
-      border-color: var(--line); color: var(--muted);
-    }
-    .xvm-pro-btn:hover, .xvm-pro-btn-primary:hover { filter: brightness(1.05); }
-    .xvm-pro-activate { margin-top: 8px; }
+    .xvm-pro-btn-primary { background: var(--accent); border-color: var(--accent); color: #0b1120; }
+    .xvm-pro-btn-ghost   { background: transparent; color: var(--text-2); }
+    .xvm-pro-btn:hover, .xvm-pro-btn-primary:hover { filter: brightness(1.1); }
+    .xvm-pro-activate { margin-top: 10px; }
     .xvm-pro-act-label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
     .xvm-pro-act-row { display: flex; gap: 6px; }
-    .xvm-pro-act-row input {
-      flex: 1; padding: 5px 7px; border: 1px solid var(--line);
-      border-radius: 5px; font: inherit; font-size: 12px;
-    }
-    .xvm-pro-act-row button {
-      padding: 5px 10px; border: 1px solid var(--accent);
-      background: var(--accent); color: #fff;
-      border-radius: 5px; cursor: pointer; font-size: 12px;
-    }
-    .xvm-pro-act-row button:disabled { opacity: 0.6; cursor: progress; }
+    .xvm-pro-act-row input { flex: 1; }
     .xvm-pro-msg { margin-top: 6px; font-size: 11px; min-height: 14px; }
-    .xvm-pro-msg[data-kind="ok"]  { color: #2a7f3f; }
-    .xvm-pro-msg[data-kind="err"] { color: #b14a2a; }
-    .xvm-pro-licbox { margin-top: 8px; padding: 8px; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
+    .xvm-pro-msg[data-kind="ok"]  { color: var(--ok); }
+    .xvm-pro-msg[data-kind="err"] { color: var(--danger); }
+    .xvm-pro-licbox { margin-top: 10px; padding: 8px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
     .xvm-pro-licrow { display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0; color: var(--muted); }
     .xvm-pro-licrow code { color: var(--text); font-family: ui-monospace, Menlo, monospace; }
 
-    /* Rate filter settings section (#45 step 3 — popup wiring) */
-    .rf-section { margin: 0 0 14px; }
-    .rf-title { font-size: 13px; margin: 0 0 6px; color: var(--text); }
+    /* === Rate-filter section (rendered by popup-rate-filter.js) === */
     .rf-section[data-locked="1"] { opacity: 0.55; }
     .rf-section[data-locked="1"] input, .rf-section[data-locked="1"] button { cursor: not-allowed; }
+    .rf-title { display: none; } /* accordion summary already labels it */
     .rf-locked-hint {
-      margin: 0 0 8px; padding: 6px 8px; border-radius: 6px;
-      background: #fff4e6; color: var(--accent-strong);
-      font-size: 11px; border: 1px dashed var(--accent);
+      margin: 0 0 8px; padding: 6px 8px; border-radius: var(--radius-sm);
+      background: rgba(251, 191, 36, 0.08); color: var(--warn);
+      font-size: 11px; border: 1px dashed var(--warn);
     }
-    .rf-toggle { margin-bottom: 6px; font-weight: 600; }
+    .rf-toggle { margin: 4px 0 8px; font-weight: 600; }
     .rf-fieldset {
-      border: 1px solid var(--line); border-radius: 6px;
-      padding: 6px 10px 8px; margin: 0 0 8px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 6px 10px 8px; margin: 0 0 8px; background: var(--bg);
     }
     .rf-fieldset legend { padding: 0 4px; font-size: 11px; color: var(--muted); }
     .rf-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0; font-size: 12px; }
-    .rf-row input[type="number"] {
-      width: 96px; padding: 3px 6px; border: 1px solid var(--line);
-      border-radius: 4px; font: inherit; text-align: right;
-    }
+    .rf-row input[type="number"] { width: 100px; text-align: right; }
     .rf-rule-hint { font-size: 11px; color: var(--muted); margin: 4px 0 8px; }
-    .rf-actions { display: flex; gap: 6px; justify-content: flex-end; }
-    .rf-btn, .rf-btn-ghost {
-      padding: 5px 10px; border-radius: 5px; font-size: 12px;
-      cursor: pointer; border: 1px solid var(--accent);
-    }
-    .rf-btn { background: var(--accent); color: #fff; }
-    .rf-btn-ghost { background: #fff; color: var(--accent-strong); }
+    .rf-btn { background: var(--accent); border-color: var(--accent); color: #0b1120; }
+    .rf-btn-ghost { background: transparent; color: var(--text-2); }
     .rf-msg { margin-top: 6px; font-size: 11px; min-height: 14px; }
-    .rf-msg[data-kind="ok"]  { color: #2a7f3f; }
-    .rf-msg[data-kind="err"] { color: #b14a2a; }
+    .rf-msg[data-kind="ok"]  { color: var(--ok); }
+    .rf-msg[data-kind="err"] { color: var(--danger); }
 
-    /* Leaderboard reset position button (#45 dev3 UX add-on) */
-    .ft-lb-reset { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-    .ft-lb-reset-btn {
-      padding: 4px 10px; border-radius: 5px;
-      border: 1px solid var(--line); background: #fff; color: var(--text);
-      font-size: 12px; cursor: pointer;
+    .footer-line {
+      text-align: center;
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 10px;
     }
-    .ft-lb-reset-btn:hover { border-color: var(--accent); color: var(--accent-strong); }
-    .ft-lb-reset-msg { font-size: 11px; color: #2a7f3f; }
+    .footer-line a { color: var(--accent); text-decoration: none; }
+    .footer-line a:hover { color: var(--accent-hi); }
   </style>
 </head>
 <body>
   <div class="popup">
-    <h1 data-i18n="extName">X Viral Monitor</h1>
+
+    <h1><span class="logo">🔥</span><span data-i18n="extName">X Viral Monitor</span></h1>
     <p class="subtitle" data-i18n="popupSubtitle">Real-time impression velocity on X tweets</p>
 
-    <!-- XVM Pro tier banner + activation (rendered by src/premium/license/popup-pro.js) -->
-    <section id="xvm-pro-section" data-tier="free"></section>
-
-    <!-- Rate filter settings (rendered by src/premium/rate-filter/popup-rate-filter.js) -->
-    <section id="rate-filter-section" class="rf-section" data-locked="0"></section>
-
-    <div class="info-box">
-      <div class="tier"><span class="icon">🌱</span><span class="label" data-i18n="tierNormal">Normal</span><span class="range" id="range-green">< 1,000/h</span></div>
-      <div class="tier"><span class="icon">🚀</span><span class="label" data-i18n="tierTrending">Trending</span><span class="range" id="range-orange">1,000 ~ 10,000/h</span></div>
-      <div class="tier"><span class="icon">🔥</span><span class="label" data-i18n="tierViral">Viral</span><span class="range" id="range-red">≥ 10,000/h</span></div>
-      <div style="margin-top:6px; font-size:11px;" data-i18n="hoverHint">
-        Hover over badges to see Views, Likes, RT, Replies, Bookmarks, Viral Score.
+    <!-- ============================================================
+         Accordion 1 — 流速过滤 (Pro)
+         ============================================================ -->
+    <details class="acc" id="acc-rate-filter">
+      <summary><span data-i18n="accRateFilter">流速过滤</span> <span class="acc-summary-sub" data-i18n="accRateFilterSub">Pro</span></summary>
+      <div class="acc-body">
+        <section id="rate-filter-section" class="rf-section" data-locked="0"></section>
       </div>
-    </div>
+    </details>
 
-    <div class="divider"></div>
+    <!-- ============================================================
+         Accordion 2 — 流速榜 + 徽章
+         ============================================================ -->
+    <details class="acc" id="acc-leaderboard">
+      <summary><span data-i18n="accLeaderboard">流速榜与徽章</span></summary>
+      <div class="acc-body">
 
-    <form id="settings-form">
-      <div class="row">
-        <label class="field">
-          <span data-i18n="thresholdTrending">🚀 Trending threshold</span>
-          <input id="trending" type="number" min="1" step="1" required>
-        </label>
-        <label class="field">
-          <span data-i18n="thresholdViral">🔥 Viral threshold</span>
-          <input id="viral" type="number" min="2" step="1" required>
-        </label>
-      </div>
-      <label class="field">
-        <span data-i18n="badgeStyleLabel">🏷️ Badge style</span>
-        <select id="badge-style">
-          <option value="pill-solid" data-i18n="badgeStylePillSolid">Pill solid</option>
-          <option value="inline-classic" data-i18n="badgeStyleInlineClassic">Inline classic</option>
-        </select>
-      </label>
-      <div class="actions">
-        <button type="submit" data-i18n="btnSave">Save</button>
-        <button type="button" id="reset" data-i18n="btnReset">Reset</button>
-      </div>
-      <p id="status" class="status-msg" role="status"></p>
-    </form>
-
-    <div class="divider"></div>
-
-    <div class="feature-row">
-      <input id="feat-copy-md" type="checkbox">
-      <div class="ft-body">
-        <label for="feat-copy-md">
-          <div class="ft-title" data-i18n="featureCopyMdTitle">📋 Copy tweet as Markdown</div>
-          <div class="ft-desc" data-i18n="featureCopyMdDesc">Adds a "Copy as Markdown" entry at the bottom of X's native share menu. Copies the tweet text, author, link and date in Markdown format.</div>
-        </label>
-      </div>
-    </div>
-
-    <div class="feature-row">
-      <input id="feat-starchart" type="checkbox">
-      <div class="ft-body">
-        <label for="feat-starchart">
-          <div class="ft-title" data-i18n="popupStarChartLabel">⭐ Thank-You Star Chart</div>
-          <div class="ft-desc" data-i18n="popupStarChartHint">Adds a star-chart option to the share menu of any tweet.</div>
-        </label>
-      </div>
-    </div>
-
-    <div class="feature-row">
-      <input id="feat-bookmark-count" type="checkbox">
-      <div class="ft-body">
-        <label for="feat-bookmark-count">
-          <div class="ft-title" data-i18n="featureBookmarkCountTitle">🔖 Show bookmark count</div>
-          <div class="ft-desc" data-i18n="featureBookmarkCountDesc">Display the bookmark count next to each tweet's bookmark button on the timeline.</div>
-        </label>
-      </div>
-    </div>
-
-    <div class="feature-row grok-template">
-      <div class="ft-body">
-        <div class="grok-template-grid">
-          <select id="grok-template-select" aria-label="Grok prompt template"></select>
-          <input id="grok-template-name" type="text" aria-label="Grok prompt template name">
+        <div class="info-box">
+          <div class="tier"><span class="icon">🌱</span><span class="label" data-i18n="tierNormal">Normal</span><span class="range" id="range-green">&lt; 1,000/h</span></div>
+          <div class="tier"><span class="icon">🚀</span><span class="label" data-i18n="tierTrending">Trending</span><span class="range" id="range-orange">1,000 ~ 10,000/h</span></div>
+          <div class="tier"><span class="icon">🔥</span><span class="label" data-i18n="tierViral">Viral</span><span class="range" id="range-red">≥ 10,000/h</span></div>
+          <div style="margin-top:6px; font-size:10.5px;" data-i18n="hoverHint">
+            Hover over badges to see Views, Likes, RT, Replies, Bookmarks, Viral Score.
+          </div>
         </div>
-        <label class="field" for="grok-prompt">
-          <span>推文模板（短推文，&lt;600 字）</span>
-          <textarea id="grok-prompt" spellcheck="false"></textarea>
-        </label>
-        <div class="ft-desc" data-i18n="popupGrokPromptHint">Use [推文内容] where the source tweet should be inserted. Click AI 生成 in a reply box, choose a template, then pick one generated option to fill the reply.</div>
-        <label class="inline-toggle" for="grok-temp-chat">
-          <input id="grok-temp-chat" type="checkbox">
-          <span data-i18n="popupGrokTempChatLabel">Use temporary chat (don't pollute Grok history)</span>
-        </label>
-        <div class="actions compact">
-          <button type="button" id="grok-prompt-add" data-i18n="btnAdd">Add</button>
-          <button type="button" id="grok-prompt-save" data-i18n="btnSave">Save</button>
-          <button type="button" id="grok-prompt-delete" data-i18n="btnDelete">Delete</button>
-          <button type="button" id="grok-prompt-reset" data-i18n="btnReset">Reset</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="feature-row grok-template">
-      <div class="ft-body">
-        <div class="grok-template-grid">
-          <select id="grok-article-template-select" aria-label="Grok article prompt template"></select>
-          <input id="grok-article-template-name" type="text" aria-label="Grok article template name">
-        </div>
-        <label class="field" for="grok-article-prompt">
-          <span>文章模板（X Article / 长文，≥600 字时使用）</span>
-          <textarea id="grok-article-prompt" spellcheck="false"></textarea>
-        </label>
-        <div class="ft-desc">回复 X 上的长文 / Article 时自动使用这组模板。同样支持 [推文内容] 占位符。</div>
-        <div class="actions compact">
-          <button type="button" id="grok-article-prompt-add" data-i18n="btnAdd">Add</button>
-          <button type="button" id="grok-article-prompt-save" data-i18n="btnSave">Save</button>
-          <button type="button" id="grok-article-prompt-delete" data-i18n="btnDelete">Delete</button>
-          <button type="button" id="grok-article-prompt-reset" data-i18n="btnReset">Reset</button>
-        </div>
-      </div>
-    </div>
+        <form id="settings-form">
+          <div class="row">
+            <label class="field">
+              <span data-i18n="thresholdTrending">🚀 Trending threshold</span>
+              <input id="trending" type="number" min="1" step="1" required>
+            </label>
+            <label class="field">
+              <span data-i18n="thresholdViral">🔥 Viral threshold</span>
+              <input id="viral" type="number" min="2" step="1" required>
+            </label>
+          </div>
+          <label class="field">
+            <span data-i18n="badgeStyleLabel">🏷️ Badge style</span>
+            <select id="badge-style">
+              <option value="pill-solid" data-i18n="badgeStylePillSolid">Pill solid</option>
+              <option value="inline-classic" data-i18n="badgeStyleInlineClassic">Inline classic</option>
+            </select>
+          </label>
+          <div class="actions">
+            <button type="button" id="reset" data-i18n="btnReset">Reset</button>
+            <button type="submit" class="primary" data-i18n="btnSave">Save</button>
+          </div>
+          <p id="status" class="status-msg" role="status"></p>
+        </form>
 
-    <div class="feature-row">
-      <input id="feat-leaderboard" type="checkbox">
-      <div class="ft-body">
-        <label for="feat-leaderboard">
-          <div class="ft-title" data-i18n="featureLeaderboardTitle">📊 Velocity leaderboard</div>
-          <div class="ft-desc" data-i18n="featureLeaderboardDesc">Draggable floating panel showing the fastest-growing tweets visible on the current page. Click a row to scroll to the tweet.</div>
-        </label>
-        <div class="ft-lb-count">
-          <label for="lb-count" data-i18n="featureLeaderboardShowTop">Show top</label>
-          <input id="lb-count" type="number" min="1" max="50" step="1">
-          <span data-i18n="featureLeaderboardTweets">tweets</span>
+        <div class="divider"></div>
+
+        <div class="feature-row">
+          <input id="feat-leaderboard" type="checkbox">
+          <div class="ft-body">
+            <label for="feat-leaderboard">
+              <div class="ft-title" data-i18n="featureLeaderboardTitle">📊 Velocity leaderboard</div>
+              <div class="ft-desc" data-i18n="featureLeaderboardDesc">Draggable floating panel showing the fastest-growing tweets visible on the current page.</div>
+            </label>
+            <div class="ft-lb-count">
+              <label for="lb-count" data-i18n="featureLeaderboardShowTop">Show top</label>
+              <input id="lb-count" type="number" min="1" max="50" step="1">
+              <span data-i18n="featureLeaderboardTweets">tweets</span>
+            </div>
+            <div class="ft-lb-cols">
+              <div class="ft-lb-cols-hint" data-i18n="featureLeaderboardColsHint">Drag to reorder · check to show</div>
+              <ul id="lb-col-list" class="col-list"></ul>
+            </div>
+            <div class="ft-lb-reset">
+              <button type="button" id="lb-reset-pos" class="ft-lb-reset-btn" data-i18n="featureLeaderboardResetPos">Reset leaderboard position</button>
+              <span class="ft-lb-reset-msg" id="lb-reset-msg"></span>
+            </div>
+          </div>
         </div>
-        <div class="ft-lb-cols">
-          <div class="ft-lb-cols-hint" data-i18n="featureLeaderboardColsHint">Drag to reorder · check to show</div>
-          <ul id="lb-col-list" class="col-list"></ul>
-        </div>
-        <div class="ft-lb-reset">
-          <button type="button" id="lb-reset-pos" class="ft-lb-reset-btn" data-i18n="featureLeaderboardResetPos">Reset leaderboard position</button>
-          <span class="ft-lb-reset-msg" id="lb-reset-msg"></span>
-        </div>
+
       </div>
-    </div>
+    </details>
+
+    <!-- ============================================================
+         Accordion 3 — Pro / License
+         ============================================================ -->
+    <details class="acc" id="acc-pro">
+      <summary><span data-i18n="accPro">License / Pro</span></summary>
+      <div class="acc-body">
+        <section id="xvm-pro-section" data-tier="free"></section>
+      </div>
+    </details>
+
+    <!-- ============================================================
+         Accordion 4 — 其它 / Settings
+         ============================================================ -->
+    <details class="acc" id="acc-other">
+      <summary><span data-i18n="accOther">其它功能与设置</span></summary>
+      <div class="acc-body">
+
+        <div class="feature-row">
+          <input id="feat-copy-md" type="checkbox">
+          <div class="ft-body">
+            <label for="feat-copy-md">
+              <div class="ft-title" data-i18n="featureCopyMdTitle">📋 Copy tweet as Markdown</div>
+              <div class="ft-desc" data-i18n="featureCopyMdDesc">Adds a "Copy as Markdown" entry at the bottom of X's native share menu.</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <input id="feat-starchart" type="checkbox">
+          <div class="ft-body">
+            <label for="feat-starchart">
+              <div class="ft-title" data-i18n="popupStarChartLabel">⭐ Thank-You Star Chart</div>
+              <div class="ft-desc" data-i18n="popupStarChartHint">Adds a star-chart option to the share menu of any tweet.</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <input id="feat-bookmark-count" type="checkbox">
+          <div class="ft-body">
+            <label for="feat-bookmark-count">
+              <div class="ft-title" data-i18n="featureBookmarkCountTitle">🔖 Show bookmark count</div>
+              <div class="ft-desc" data-i18n="featureBookmarkCountDesc">Display the bookmark count next to each tweet's bookmark button on the timeline.</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="feature-row grok-template">
+          <div class="ft-body">
+            <div class="grok-template-grid">
+              <select id="grok-template-select" aria-label="Grok prompt template"></select>
+              <input id="grok-template-name" type="text" aria-label="Grok prompt template name">
+            </div>
+            <label class="field" for="grok-prompt">
+              <span>推文模板（短推文，&lt;600 字）</span>
+              <textarea id="grok-prompt" spellcheck="false"></textarea>
+            </label>
+            <div class="ft-desc" data-i18n="popupGrokPromptHint">Use [推文内容] where the source tweet should be inserted.</div>
+            <label class="inline-toggle" for="grok-temp-chat">
+              <input id="grok-temp-chat" type="checkbox">
+              <span data-i18n="popupGrokTempChatLabel">Use temporary chat (don't pollute Grok history)</span>
+            </label>
+            <div class="actions compact">
+              <button type="button" id="grok-prompt-add" data-i18n="btnAdd">Add</button>
+              <button type="button" id="grok-prompt-save" data-i18n="btnSave">Save</button>
+              <button type="button" id="grok-prompt-delete" data-i18n="btnDelete">Delete</button>
+              <button type="button" id="grok-prompt-reset" data-i18n="btnReset">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row grok-template">
+          <div class="ft-body">
+            <div class="grok-template-grid">
+              <select id="grok-article-template-select" aria-label="Grok article prompt template"></select>
+              <input id="grok-article-template-name" type="text" aria-label="Grok article template name">
+            </div>
+            <label class="field" for="grok-article-prompt">
+              <span>文章模板（X Article / 长文，≥600 字时使用）</span>
+              <textarea id="grok-article-prompt" spellcheck="false"></textarea>
+            </label>
+            <div class="ft-desc">回复 X 上的长文 / Article 时自动使用这组模板。</div>
+            <div class="actions compact">
+              <button type="button" id="grok-article-prompt-add" data-i18n="btnAdd">Add</button>
+              <button type="button" id="grok-article-prompt-save" data-i18n="btnSave">Save</button>
+              <button type="button" id="grok-article-prompt-delete" data-i18n="btnDelete">Delete</button>
+              <button type="button" id="grok-article-prompt-reset" data-i18n="btnReset">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer-line">
+          <a href="https://github.com/Icy-Cat/x-viral-monitor" target="_blank" rel="noopener">github.com/Icy-Cat/x-viral-monitor</a>
+        </p>
+
+      </div>
+    </details>
+
   </div>
 
   <script src="src/premium/license/tier-logic.js"></script>

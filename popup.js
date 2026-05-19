@@ -17,7 +17,7 @@ const COLUMN_LABEL_KEYS = {
 };
 const KNOWN_COLUMN_IDS = DEFAULT_COLUMNS.map((c) => c.id);
 const DEFAULT_FEATURES = {
-  featureVelocityLeaderboard: false,
+  featureVelocityLeaderboard: true,
   featureCopyAsMarkdown: true,
   featureStarChart: true,
   showBookmarkCount: true,

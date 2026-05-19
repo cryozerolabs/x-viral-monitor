@@ -4,3 +4,10 @@ node_modules/
 .superpowers/
 .playwright-mcp/
 *.png.bak
+
+# bb-browser / playwright-mcp scratch artifacts that pile up at repo root
+/.snap.json
+/.tmp_snapshot.json
+/xviral-*.png
+/xvm-*.png
+/liv-newtweet-*.png

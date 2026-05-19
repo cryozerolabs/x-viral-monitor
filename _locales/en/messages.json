@@ -364,5 +364,10 @@
   "rfSavedOk":       { "message": "Saved ✓" },
   "rfResetOk":       { "message": "Reset ✓" },
   "featureLeaderboardResetPos":  { "message": "Reset leaderboard position" },
-  "featureLeaderboardResetDone": { "message": "Reset — please refresh the page." }
+  "featureLeaderboardResetDone": { "message": "Reset — please refresh the page." },
+  "accRateFilter":    { "message": "Velocity filter" },
+  "accRateFilterSub": { "message": "Pro" },
+  "accLeaderboard":   { "message": "Leaderboard & badges" },
+  "accPro":           { "message": "License / Pro" },
+  "accOther":         { "message": "Other features & settings" }
 }

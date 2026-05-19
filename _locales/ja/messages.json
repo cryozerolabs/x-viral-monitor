@@ -362,5 +362,10 @@
   "rfSavedOk":       { "message": "保存しました ✓" },
   "rfResetOk":       { "message": "リセット ✓" },
   "featureLeaderboardResetPos":  { "message": "ランキング位置をリセット" },
-  "featureLeaderboardResetDone": { "message": "リセットしました。ページを更新してください。" }
+  "featureLeaderboardResetDone": { "message": "リセットしました。ページを更新してください。" },
+  "accRateFilter":    { "message": "流速フィルター" },
+  "accRateFilterSub": { "message": "Pro" },
+  "accLeaderboard":   { "message": "ランキングとバッジ" },
+  "accPro":           { "message": "ライセンス / Pro" },
+  "accOther":         { "message": "その他の機能と設定" }
 }

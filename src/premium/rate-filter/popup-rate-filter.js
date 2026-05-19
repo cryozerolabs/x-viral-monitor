@@ -14,10 +14,10 @@
 
   const DEFAULTS = {
     enabled: false,           // opt-in per locked decision 2026-05-19
-    shortRateThreshold: 50,
+    shortRateThreshold: 1000,
     shortAbsoluteThreshold: 10000,
-    longRateThreshold: 10,
-    longAbsoluteThreshold: 2000,
+    longRateThreshold: 1000,
+    longAbsoluteThreshold: 10000,
     scopeHome: true,
     scopeList: true,
   };
