@@ -40,7 +40,7 @@ PRIVACY
 - No analytics, no tracking pixels, no third-party data collection.
 - The extension reads only x.com / pro.x.com pages you are already viewing.
 - Pro license checks send only the license key through a Cloudflare Worker proxy.
-- X List member data is public List member metadata cached locally in chrome.storage.
+- X List metadata and member identifiers are fetched from X with your current X session and cached locally in chrome.storage; they are not uploaded to XVM servers.
 - Open source: https://github.com/Icy-Cat/x-viral-monitor
 
 COMPATIBILITY
@@ -94,7 +94,7 @@ v1.7.0 新增 — XVM Pro
 - 无分析埋点、无跟踪像素、无第三方数据采集。
 - 只读取你正在浏览的 x.com / pro.x.com 页面。
 - Pro license 校验只通过 Cloudflare Worker 代理发送 license key。
-- X List 成员数据来自公开 List, 仅缓存到本地 chrome.storage。
+- X List 信息和成员标识会使用你当前的 X 登录态从 X 获取，并仅缓存到本地 chrome.storage；不会上传到 XVM 服务器。
 - 开源地址: https://github.com/Icy-Cat/x-viral-monitor
 
 兼容性
