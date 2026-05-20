@@ -1069,7 +1069,10 @@ function installLeaderboardTierSync() {
     if (!leaderboardEl) return;
     const tier = window.__xvmPro?.getCurrentTier?.() || 'free';
     const hot = leaderboardEl.querySelector('.xvm-lb-hot');
-    if (hot) hot.dataset.tier = tier;
+    if (hot) {
+      hot.dataset.tier = tier;
+      setLeaderboardHotSwitchState();
+    }
   }
   refreshTier();
   window.__xvmPro?.onTierChange?.(() => refreshTier());
@@ -1079,18 +1082,28 @@ function installLeaderboardTierSync() {
 // The hot-only toggle reflects whichever side last changed
 // chrome.storage.local.xvm_rate_filter_v1.enabled. We listen for the
 // settings-update message that isolated.js already broadcasts.
+let _rateFilterEnabled = false;
+function setLeaderboardHotSwitchState() {
+  const hot = leaderboardEl?.querySelector('.xvm-lb-hot');
+  if (!hot) return;
+  const tier = hot.dataset.tier || 'free';
+  const on = tier !== 'free' && _rateFilterEnabled;
+  hot.dataset.on = on ? '1' : '0';
+  const cb = hot.querySelector('input[type="checkbox"]');
+  if (cb && cb.checked !== on) cb.checked = on;
+}
 function installLeaderboardFilterStateSync() {
   window.addEventListener('message', (ev) => {
     if (ev.source !== window) return;
     if (ev.data?.type === 'XVM_RATE_SETTINGS_UPDATE' && ev.data.settings) {
-      const hot = leaderboardEl?.querySelector('.xvm-lb-hot');
-      if (!hot) return;
-      const on = !!ev.data.settings.enabled;
-      hot.dataset.on = on ? '1' : '0';
-      const cb = hot.querySelector('input[type="checkbox"]');
-      if (cb && cb.checked !== on) cb.checked = on;
+      _rateFilterEnabled = !!ev.data.settings.enabled;
+      setLeaderboardHotSwitchState();
     }
   });
+  // Leaderboard can be created after isolated.js did its document_start
+  // bootstrap push. Ask the isolated bridge for the current local setting so
+  // the switch and popup start from the same source of truth.
+  window.postMessage({ type: 'XVM_RATE_FILTER_REQUEST' }, '*');
 }
 
 function onHotToggleClick(ev) {

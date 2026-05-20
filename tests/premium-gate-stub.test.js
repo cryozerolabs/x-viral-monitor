@@ -111,12 +111,42 @@ describe('#45 M1 step 1 — premium gate scaffold', () => {
       ).toBe(false);
     });
 
+    it('rate-filter revoke/keep preserves list-member hidden cells', () => {
+      expect(filter).toMatch(/HIDE_ATTR\s*=\s*['"]data-xvm-rate-hidden['"]/);
+      expect(filter).toMatch(/OTHER_HIDE_ATTRS\s*=\s*\[['"]data-xvm-list-member-hidden['"]\]/);
+      expect(filter).toMatch(/hasOtherXvmHideMarker/);
+      expect(filter).toMatch(/restoreCellIfNoOtherXvmMarker/);
+      expect(filter).toMatch(/if\s*\(\s*!\s*hasOtherXvmHideMarker\(art\)\s*\)\s*cell\.style\.display\s*=\s*['"]['"]/);
+    });
+
     it('reset() clears the subscribed flag (for hot-reload + tests)', () => {
       const reset = filter.match(/reset\(\)\s*\{[\s\S]*?\n    \},/);
       expect(reset, 'reset() body must be locatable').not.toBeNull();
       expect(/subscribed\s*=\s*false\s*;/.test(reset[0]),
         'reset() must reset subscribed to false so a fresh subscribe is possible'
       ).toBe(true);
+    });
+
+    it('disabled settings revoke previously hidden tweets without clearing decisions', () => {
+      const apply = filter.match(/function\s+applyHidesNow\s*\(\)\s*\{[\s\S]*?\n  \}/);
+      expect(apply, 'applyHidesNow() body must be locatable').not.toBeNull();
+      expect(/!\s*SETTINGS\.enabled/.test(apply[0]),
+        'applyHidesNow() must check SETTINGS.enabled'
+      ).toBe(true);
+      expect(/revoke\s*\(\s*\)\s*;/.test(apply[0]),
+        'applyHidesNow() must revoke hidden cells when the filter is OFF'
+      ).toBe(true);
+      expect(/decisions\.clear\s*\(\s*\)/.test(apply[0]),
+        'turning OFF must not clear cached decisions; turning ON should be instant'
+      ).toBe(false);
+    });
+
+    it('net-hook still scans while disabled so ON can hide current timeline immediately', () => {
+      const sub = filter.match(/function\s+subscribe\s*\(\)\s*\{[\s\S]*?\n  \}/);
+      expect(sub, 'subscribe() body must be locatable').not.toBeNull();
+      expect(/if\s*\(\s*!\s*SETTINGS\.enabled\s*\)\s*return\s*;/.test(sub[0]),
+        'subscribe() must not skip GraphQL scanning just because the filter is currently OFF'
+      ).toBe(false);
     });
   });
 

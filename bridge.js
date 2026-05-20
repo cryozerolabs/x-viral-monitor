@@ -241,6 +241,32 @@ window.addEventListener('message', (event) => {
     return;
   }
 
+  if (type === 'XVM_RATE_FILTER_REQUEST') {
+    safeChromeCall(() => {
+      const RF_KEY = 'xvm_rate_filter_v1';
+      chrome.storage.local.get({ [RF_KEY]: null }, (items) => {
+        const settings = items[RF_KEY] && typeof items[RF_KEY] === 'object'
+          ? items[RF_KEY]
+          : { enabled: false };
+        window.postMessage({ type: 'XVM_RATE_SETTINGS_UPDATE', settings }, '*');
+      });
+    });
+    return;
+  }
+
+  if (type === 'XVM_LIST_MEMBER_FILTER_REQUEST') {
+    safeChromeCall(() => {
+      const LF_KEY = 'xvm_list_member_filter_v1';
+      chrome.storage.local.get({ [LF_KEY]: null }, (items) => {
+        const settings = items[LF_KEY] && typeof items[LF_KEY] === 'object'
+          ? items[LF_KEY]
+          : { enabled: false, scopes: { home: true, list: true, profile: true, status: true }, lists: [] };
+        window.postMessage({ type: 'XVM_LIST_MEMBER_FILTER_UPDATE', settings }, '*');
+      });
+    });
+    return;
+  }
+
   if (type === 'XVM_LB_POS_REQUEST') {
     safeChromeCall(() => {
       chrome.storage.local.get({ xvmLeaderboardPos: null }, (items) => {
@@ -388,6 +414,13 @@ safeChromeCall(() => {
 
 safeChromeCall(() => {
   chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes.xvm_list_member_filter_v1) {
+      const settings = changes.xvm_list_member_filter_v1.newValue && typeof changes.xvm_list_member_filter_v1.newValue === 'object'
+        ? changes.xvm_list_member_filter_v1.newValue
+        : { enabled: false, scopes: { home: true, list: true, profile: true, status: true }, lists: [] };
+      window.postMessage({ type: 'XVM_LIST_MEMBER_FILTER_UPDATE', settings }, '*');
+      return;
+    }
     if (areaName !== 'sync') return;
     // Theme changes: broadcast to MAIN-world content.js so leaderboard
     // recolors live. (Popup already self-syncs via its own listener.)
@@ -427,4 +460,3 @@ safeChromeCall(() => {
     });
   });
 });
-

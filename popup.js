@@ -59,6 +59,138 @@ function tr(key, substitutions) {
   return t(key, substitutions) || key;
 }
 
+const customSelectState = new WeakMap();
+
+function initCustomSelect(input) {
+  if (!input || customSelectState.has(input)) return customSelectState.get(input);
+  const root = input.closest('.xvm-select');
+  if (!root) return null;
+  const trigger = root.querySelector('.xvm-select-trigger');
+  const valueEl = root.querySelector('.xvm-select-value');
+  const menu = root.querySelector('.xvm-select-menu');
+  if (!trigger || !valueEl || !menu) return null;
+
+  const state = { root, trigger, valueEl, menu, options: [] };
+  customSelectState.set(input, state);
+
+  const menuId = `${input.id || 'xvm-select'}-listbox`;
+  menu.id = menuId;
+  trigger.setAttribute('aria-controls', menuId);
+
+  trigger.addEventListener('click', () => {
+    if (root.dataset.open === '1') {
+      closeCustomSelect(input);
+    } else {
+      openCustomSelect(input);
+    }
+  });
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      openCustomSelect(input);
+      focusSelectedCustomSelectOption(input);
+    }
+  });
+  menu.addEventListener('keydown', (e) => {
+    const buttons = [...menu.querySelectorAll('.xvm-select-option')];
+    const current = buttons.indexOf(document.activeElement);
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeCustomSelect(input);
+      trigger.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      buttons[Math.min(current + 1, buttons.length - 1)]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      buttons[Math.max(current - 1, 0)]?.focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      document.activeElement?.click?.();
+    }
+  });
+
+  if (!document.__xvmCustomSelectOutside) {
+    document.__xvmCustomSelectOutside = true;
+    document.addEventListener('click', (e) => {
+      document.querySelectorAll('.xvm-select[data-open="1"]').forEach((openRoot) => {
+        if (!openRoot.contains(e.target)) closeCustomSelect(openRoot.querySelector('input[type="hidden"]'));
+      });
+    });
+  }
+
+  return state;
+}
+
+function closeCustomSelect(input) {
+  const state = customSelectState.get(input);
+  if (!state) return;
+  state.root.dataset.open = '0';
+  state.trigger.setAttribute('aria-expanded', 'false');
+}
+
+function openCustomSelect(input) {
+  const state = initCustomSelect(input);
+  if (!state) return;
+  document.querySelectorAll('.xvm-select[data-open="1"]').forEach((openRoot) => {
+    const openInput = openRoot.querySelector('input[type="hidden"]');
+    if (openInput !== input) closeCustomSelect(openInput);
+  });
+  state.root.dataset.open = '1';
+  state.trigger.setAttribute('aria-expanded', 'true');
+}
+
+function focusSelectedCustomSelectOption(input) {
+  const state = customSelectState.get(input);
+  if (!state) return;
+  const selected = state.menu.querySelector('.xvm-select-option[aria-selected="true"]')
+    || state.menu.querySelector('.xvm-select-option');
+  selected?.focus();
+}
+
+function setCustomSelectValue(input, value, opts = {}) {
+  const state = initCustomSelect(input);
+  if (!state) {
+    if (input) input.value = value;
+    return;
+  }
+  const next = String(value ?? '');
+  input.value = next;
+  const active = state.options.find((item) => item.value === next) || state.options[0];
+  state.valueEl.textContent = active?.label || '';
+  state.menu.querySelectorAll('.xvm-select-option').forEach((btn) => {
+    const selected = btn.dataset.value === next;
+    btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+  });
+  if (opts.dispatch) input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function setCustomSelectOptions(input, options, selectedValue = input?.value) {
+  const state = initCustomSelect(input);
+  if (!state) return;
+  state.options = options.map((item) => ({
+    value: String(item.value),
+    label: String(item.label),
+  }));
+  state.menu.innerHTML = '';
+  state.options.forEach((item) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'xvm-select-option';
+    btn.setAttribute('role', 'option');
+    btn.dataset.value = item.value;
+    btn.textContent = item.label;
+    btn.addEventListener('click', () => {
+      setCustomSelectValue(input, item.value, { dispatch: true });
+      closeCustomSelect(input);
+      state.trigger.focus();
+    });
+    state.menu.appendChild(btn);
+  });
+  const hasSelected = state.options.some((item) => item.value === String(selectedValue ?? ''));
+  setCustomSelectValue(input, hasSelected ? selectedValue : state.options[0]?.value || '');
+}
+
 function normalizeColumns(raw) {
   if (!Array.isArray(raw)) return DEFAULT_COLUMNS.map((c) => ({ ...c }));
   const seen = new Set();
@@ -103,6 +235,11 @@ const grokArticlePromptSaveBtn = document.getElementById('grok-article-prompt-sa
 const grokArticlePromptResetBtn = document.getElementById('grok-article-prompt-reset');
 const grokArticlePromptAddBtn = document.getElementById('grok-article-prompt-add');
 const grokArticlePromptDeleteBtn = document.getElementById('grok-article-prompt-delete');
+
+setCustomSelectOptions(badgeStyleSelect, [
+  { value: 'pill-solid', label: tr('badgeStylePillSolid') || 'Pill solid' },
+  { value: 'inline-classic', label: tr('badgeStyleInlineClassic') || 'Inline classic' },
+], 'pill-solid');
 
 let columnsState = normalizeColumns(null);
 let grokTemplatesState = DEFAULT_FEATURES.grokPromptTemplates.map((tpl) => ({ ...tpl }));
@@ -175,7 +312,7 @@ chrome.storage.sync.get(STORAGE_DEFAULTS, (items) => {
   starChartToggle.checked = items.featureStarChart !== false;
   bookmarkCountToggle.checked = items.showBookmarkCount !== false;
   leaderboardCountInput.value = normalizeCount(items.leaderboardCount);
-  badgeStyleSelect.value = items.badgeStyle === 'inline-classic' ? 'inline-classic' : 'pill-solid';
+  setCustomSelectValue(badgeStyleSelect, items.badgeStyle === 'inline-classic' ? 'inline-classic' : 'pill-solid');
   grokTemplatesState = normalizeGrokTemplates(items.grokPromptTemplates, items.grokCommentPrompt);
   grokSelectedTemplateId = items.grokSelectedPromptId || grokTemplatesState[0]?.id || 'default';
   if (!grokTemplatesState.some((tpl) => tpl.id === grokSelectedTemplateId)) {
@@ -198,18 +335,15 @@ chrome.storage.sync.get(STORAGE_DEFAULTS, (items) => {
 
 function renderGrokTemplateEditor() {
   if (!grokTemplateSelect || !grokPromptInput || !grokTemplateNameInput) return;
-  grokTemplateSelect.innerHTML = '';
-  grokTemplatesState.forEach((tpl) => {
-    const option = document.createElement('option');
-    option.value = tpl.id;
-    option.textContent = tpl.name;
-    option.selected = tpl.id === grokSelectedTemplateId;
-    grokTemplateSelect.appendChild(option);
-  });
+  setCustomSelectOptions(
+    grokTemplateSelect,
+    grokTemplatesState.map((tpl) => ({ value: tpl.id, label: tpl.name })),
+    grokSelectedTemplateId
+  );
   const active = grokTemplatesState.find((tpl) => tpl.id === grokSelectedTemplateId) || grokTemplatesState[0];
   if (active) {
     grokSelectedTemplateId = active.id;
-    grokTemplateSelect.value = active.id;
+    setCustomSelectValue(grokTemplateSelect, active.id);
     grokTemplateNameInput.value = active.name;
     grokPromptInput.value = active.prompt;
   }
@@ -227,18 +361,15 @@ function persistGrokTemplates(messageKey = 'flashGrokPromptSaved') {
 
 function renderGrokArticleTemplateEditor() {
   if (!grokArticleTemplateSelect || !grokArticlePromptInput || !grokArticleTemplateNameInput) return;
-  grokArticleTemplateSelect.innerHTML = '';
-  grokArticleTemplatesState.forEach((tpl) => {
-    const option = document.createElement('option');
-    option.value = tpl.id;
-    option.textContent = tpl.name;
-    option.selected = tpl.id === grokSelectedArticleTemplateId;
-    grokArticleTemplateSelect.appendChild(option);
-  });
+  setCustomSelectOptions(
+    grokArticleTemplateSelect,
+    grokArticleTemplatesState.map((tpl) => ({ value: tpl.id, label: tpl.name })),
+    grokSelectedArticleTemplateId
+  );
   const active = grokArticleTemplatesState.find((tpl) => tpl.id === grokSelectedArticleTemplateId) || grokArticleTemplatesState[0];
   if (active) {
     grokSelectedArticleTemplateId = active.id;
-    grokArticleTemplateSelect.value = active.id;
+    setCustomSelectValue(grokArticleTemplateSelect, active.id);
     grokArticleTemplateNameInput.value = active.name;
     grokArticlePromptInput.value = active.prompt;
   }
@@ -465,7 +596,7 @@ form.addEventListener('submit', (e) => {
 
 resetBtn.addEventListener('click', () => {
   fill(DEFAULT_THRESHOLDS);
-  badgeStyleSelect.value = 'pill-solid';
+  setCustomSelectValue(badgeStyleSelect, 'pill-solid');
   chrome.storage.sync.set({ ...DEFAULT_THRESHOLDS, badgeStyle: 'pill-solid' }, () => flash(tr('flashReset')));
 });
 
@@ -486,4 +617,3 @@ lbResetBtn?.addEventListener('click', () => {
     }
   );
 });
-

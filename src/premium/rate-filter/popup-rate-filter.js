@@ -20,9 +20,11 @@
     longAbsoluteThreshold: 10000,
     scopeHome: true,
     scopeList: true,
+    scopeProfile: true,
+    scopeStatus: true,
   };
 
-  const BOOL_KEYS = ['enabled', 'scopeHome', 'scopeList'];
+  const BOOL_KEYS = ['enabled', 'scopeHome', 'scopeList', 'scopeProfile', 'scopeStatus'];
   const NUM_KEYS  = ['shortRateThreshold', 'shortAbsoluteThreshold',
                      'longRateThreshold',  'longAbsoluteThreshold'];
 
@@ -75,7 +77,7 @@
     //   header (icon + title)
     //   Enable toggle (full row, switch on right)
     //   Sub-tab card (Short / Long, underline-style sub-tabs + threshold inputs)
-    //   Scope checkboxes (Home / Lists)
+    //   Scope switches (Home / Lists / Profile / Tweet detail)
     //   Save (primary, full width) + Reset (ghost link below)
     section.innerHTML = `
       <h2 class="rf-title" data-k="rfTitle"></h2>
@@ -108,9 +110,24 @@
         </div>
       </div>
 
-      <div class="rf-scope">
-        <label><input type="checkbox" id="rf-scopeHome" /> <span data-k="rfScopeHome"></span></label>
-        <label><input type="checkbox" id="rf-scopeList" /> <span data-k="rfScopeList"></span></label>
+      <div class="rf-scope" role="group" aria-label="${t('rfScopeLegend')}">
+        <div class="rf-scope-title" data-k="rfScopeLegend"></div>
+        <label class="rf-scope-switch">
+          <span data-k="rfScopeHome"></span>
+          <span class="switch"><input type="checkbox" id="rf-scopeHome" /><span class="slider"></span></span>
+        </label>
+        <label class="rf-scope-switch">
+          <span data-k="rfScopeList"></span>
+          <span class="switch"><input type="checkbox" id="rf-scopeList" /><span class="slider"></span></span>
+        </label>
+        <label class="rf-scope-switch">
+          <span data-k="rfScopeProfile"></span>
+          <span class="switch"><input type="checkbox" id="rf-scopeProfile" /><span class="slider"></span></span>
+        </label>
+        <label class="rf-scope-switch">
+          <span data-k="rfScopeStatus"></span>
+          <span class="switch"><input type="checkbox" id="rf-scopeStatus" /><span class="slider"></span></span>
+        </label>
       </div>
 
       <p class="rf-rule-hint" data-k="rfRuleHint"></p>

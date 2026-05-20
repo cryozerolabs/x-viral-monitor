@@ -354,6 +354,8 @@
   "rfScopeLegend":   { "message": "Scope" },
   "rfScopeHome":     { "message": "Home" },
   "rfScopeList":     { "message": "Lists" },
+  "rfScopeProfile":  { "message": "Profiles" },
+  "rfScopeStatus":   { "message": "Tweet detail" },
   "rfShortLegend":   { "message": "Short tweets — keep if either threshold passes" },
   "rfLongLegend":    { "message": "X Articles (long-form) — keep if either threshold passes" },
   "rfRatePerMin":    { "message": "views / min ≥" },
@@ -413,7 +415,6 @@
   "chipTrialDays":  { "message": "$DAYS$ days left", "placeholders": { "DAYS": { "content": "$1" } } },
   "chipTrialOne":   { "message": "1 day left" },
   "themeLabel":     { "message": "Theme" },
-  "themeHint":      { "message": "Switch between warm light and dark mode. Your choice is synced to chrome.storage.sync." },
   "themeSwitchToDark":  { "message": "Switch to dark" },
   "themeSwitchToLight": { "message": "Switch to light" },
   "themeFollowSystem":  { "message": "Following system" },
@@ -422,5 +423,14 @@
   "contentLbHotProSub":    { "message": "Hide low-views tweets, keep what's actually spreading" },
   "contentLbHotMonthly":   { "message": "Monthly $9" },
   "contentLbHotAnnual":    { "message": "Annual $90 (save 17%)" },
-  "advAppearanceTitle": { "message": "Appearance" }
+  "advAppearanceTitle": { "message": "Appearance" },
+  "lfTitle":        { "message": "X List member filter (Pro)" },
+  "lfLockedHint":   { "message": "Upgrade Pro to filter by X List members." },
+  "lfEnabled":      { "message": "Only show tweets from saved List members" },
+  "lfInputLabel":   { "message": "List URL or listId" },
+  "lfAdd":          { "message": "Add List" },
+  "lfCaptureHint":  { "message": "Save the List first, then open that X List page once so member capture can finish." },
+  "lfInvalidInput": { "message": "Enter a valid X List URL or numeric listId." },
+  "lfAddedOk":      { "message": "List saved. Open it on X to capture members." },
+  "lfMembers":      { "message": "members" }
 }

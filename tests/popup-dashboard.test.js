@@ -14,6 +14,7 @@ const proJs     = readFileSync(resolve(repo, 'src/premium/license/popup-pro.js')
 const rfJs      = readFileSync(resolve(repo, 'src/premium/rate-filter/popup-rate-filter.js'), 'utf8');
 const bridgeJs  = readFileSync(resolve(repo, 'bridge.js'),          'utf8');
 const popupJs   = readFileSync(resolve(repo, 'popup.js'),           'utf8');
+const userScript = readFileSync(resolve(repo, 'userscript/x-viral-monitor.user.js'), 'utf8');
 
 describe('#45 popup tabs structure (mock A)', () => {
   it('body declares data-tab default "filter" + data-tier "free" + data-theme "light"', () => {
@@ -96,12 +97,20 @@ describe('#45 popup tabs structure (mock A)', () => {
     }
   });
 
-  it('loads scripts in order: tier-logic → popup-pro → popup-rate-filter → popup.js → popup-dashboard', () => {
+  it('uses custom shadcn-style Select controls instead of native dropdowns', () => {
+    expect(/<select\b|<option\b/.test(html)).toBe(false);
+    expect(/document\.createElement\(\s*['"]option['"]\s*\)/.test(popupJs)).toBe(false);
+    expect(/<select\b|<option\b/.test(userScript)).toBe(false);
+    expect((html.match(/class="xvm-select"/g) || []).length).toBe(3);
+  });
+
+  it('loads scripts in order: tier-logic → popup-pro → popup filters → popup.js → popup-dashboard', () => {
     const scripts = [...html.matchAll(/<script\s+src="([^"]+)"/g)].map((m) => m[1]);
     expect(scripts).toEqual([
       'src/premium/license/tier-logic.js',
       'src/premium/license/popup-pro.js',
       'src/premium/rate-filter/popup-rate-filter.js',
+      'src/premium/list-member-filter/popup-list-member-filter.js',
       'popup.js',
       'popup-dashboard.js',
     ]);
@@ -227,13 +236,37 @@ describe('#45 i18n keys (mock A + dual theme)', () => {
       'comingListTitle',
       'chipTierFree', 'chipTierTrial', 'chipTierPro',
       'chipTrialDays', 'chipTrialOne',
-      'themeLabel', 'themeHint', 'themeSwitchToDark', 'themeSwitchToLight',
+      'themeLabel', 'themeSwitchToDark', 'themeSwitchToLight',
       'advAppearanceTitle',
     ];
     for (const k of required) {
       expect(en[k]?.message, `en must declare ${k}`).toBeTruthy();
       expect(zh[k]?.message, `zh_CN must declare ${k}`).toBeTruthy();
     }
+  });
+});
+
+describe('#59 popup polish controls', () => {
+  it('removes the verbose theme storage hint from the visible About panel', () => {
+    expect(/data-i18n="themeHint"/.test(html)).toBe(false);
+    expect(/chrome\.storage\.sync/.test(html)).toBe(false);
+  });
+
+  it('renders binary feature controls as shadcn pill switches', () => {
+    for (const id of [
+      'feat-leaderboard',
+      'feat-copy-md',
+      'feat-starchart',
+      'feat-bookmark-count',
+      'grok-temp-chat',
+    ]) {
+      const pattern = new RegExp(`class="switch"[\\s\\S]*?<input id="${id}" type="checkbox"[\\s\\S]*?<span class="slider"></span>`);
+      expect(pattern.test(html), `${id} must be wrapped in the common pill switch`).toBe(true);
+    }
+  });
+
+  it('keeps leaderboard column visibility as real checkboxes for multi-select', () => {
+    expect(/<input type="checkbox" \$\{col\.visible \? 'checked' : ''\}>/.test(popupJs)).toBe(true);
   });
 });
 

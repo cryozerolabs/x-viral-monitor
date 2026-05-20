@@ -3,7 +3,7 @@
 // Ported from PoC repo `x-tweet-rate-filter` (commits 70a1bc3 / 404d7bb /
 // 0d96b82, see #42 thread). Gated by window.__xvmPro.isFeatureEnabled.
 //
-// Filters X Home / List / HomeLatest timelines by double-threshold:
+// Filters X Home / List / Profile / Tweet-detail timelines by double-threshold:
 //   keep = (views/min > rateThreshold) OR (views > absoluteThreshold)
 // Short tweets and X Articles use independent threshold pairs.
 //
@@ -44,6 +44,8 @@
     longAbsoluteThreshold: 10000,
     scopeHome: true,
     scopeList: true,
+    scopeProfile: true,
+    scopeStatus: true,
   };
 
   function updateSettings(patch) {
@@ -60,6 +62,8 @@
   // tweetId -> { hide, isLong, reason, raw }
   const decisions = new Map();
   const counted = new Set();
+  const HIDE_ATTR = 'data-xvm-rate-hidden';
+  const OTHER_HIDE_ATTRS = ['data-xvm-list-member-hidden'];
 
   // Listen for settings pushed from isolated.js (popup wrote
   // chrome.storage.local.xvm_rate_filter_v1 → isolated.js relays).
@@ -71,10 +75,44 @@
   });
 
   // === Endpoint whitelist ===
+  const SCOPE_SETTING_KEY = {
+    home: 'scopeHome',
+    list: 'scopeList',
+    profile: 'scopeProfile',
+    status: 'scopeStatus',
+  };
+  const RESERVED_PROFILE_PATHS = new Set([
+    'compose', 'explore', 'home', 'i', 'jobs', 'messages', 'notifications',
+    'search', 'settings',
+  ]);
+
+  function scopeFromPath(pathname = window.location.pathname) {
+    const path = String(pathname || '/').split('?')[0].replace(/\/+$/, '') || '/';
+    if (path === '/' || path === '/home') return 'home';
+    if (/^\/i\/lists\/[^/]+/.test(path) || /^\/[^/]+\/lists\/[^/]+/.test(path)) return 'list';
+    if (/^\/[^/]+\/status\/\d+/.test(path)) return 'status';
+    const m = path.match(/^\/([^/]+)$/);
+    if (m && !RESERVED_PROFILE_PATHS.has(m[1])) return 'profile';
+    return null;
+  }
+
+  function scopeEnabled(scope) {
+    const key = SCOPE_SETTING_KEY[scope];
+    return !key || SETTINGS[key] !== false;
+  }
+
+  function currentPageScopeEnabled() {
+    const scope = scopeFromPath();
+    return !scope || scopeEnabled(scope);
+  }
+
   const ENDPOINT_MATCHERS = [
     { re: /\/i\/api\/graphql\/[^/]+\/HomeTimeline\b/,             scope: 'home' },
     { re: /\/i\/api\/graphql\/[^/]+\/HomeLatestTimeline\b/,       scope: 'home' },
     { re: /\/i\/api\/graphql\/[^/]+\/ListLatestTweetsTimeline\b/, scope: 'list' },
+    { re: /\/i\/api\/graphql\/[^/]+\/UserTweets\b/,              scope: 'profile' },
+    { re: /\/i\/api\/graphql\/[^/]+\/UserTweetsAndReplies\b/,    scope: 'profile' },
+    { re: /\/i\/api\/graphql\/[^/]+\/TweetDetail\b/,             scope: 'status' },
   ];
 
   // === Net hook subscription ===
@@ -100,9 +138,7 @@
     for (const { re, scope } of ENDPOINT_MATCHERS) {
       window.__xvmNet.onResponse(re, async ({ response, source }) => {
         if (!gateOpen()) return;
-        if (!SETTINGS.enabled) return;
-        if (scope === 'home' && !SETTINGS.scopeHome) return;
-        if (scope === 'list' && !SETTINGS.scopeList) return;
+        if (!scopeEnabled(scope) || !currentPageScopeEnabled()) return;
         let data;
         try {
           if (source === 'fetch') data = await response.clone().json();
@@ -183,23 +219,29 @@
   // article so tracking selectors (e.g. revoke's [data-xvm-rate-hidden])
   // keep working.
   function applyHidesNow() {
-    if (!gateOpen()) return; // tier may have flipped to free mid-session
+    // Tier revoke or OFF must restore only nodes this module hid. Decisions
+    // stay cached so turning ON again can immediately re-hide already scanned
+    // timeline tweets without waiting for another GraphQL response.
+    if (!gateOpen() || !SETTINGS.enabled || !currentPageScopeEnabled()) {
+      revoke();
+      return;
+    }
     const arts = document.querySelectorAll('article[data-testid="tweet"]');
     for (const art of arts) {
       const tid = articleTweetId(art);
       if (!tid) continue;
       const d = decisions.get(tid);
       if (!d) continue;
-      const cell = art.closest('[data-testid="cellInnerDiv"]') || art;
+      const cell = cellForArticle(art);
       if (d.hide) {
         if (cell.style.display !== 'none') {
           cell.style.display = 'none';
-          art.setAttribute('data-xvm-rate-hidden', d.reason);
+          art.setAttribute(HIDE_ATTR, d.reason);
           if (!counted.has(tid)) counted.add(tid);
         }
-      } else if (art.getAttribute('data-xvm-rate-hidden')) {
-        cell.style.display = '';
-        art.removeAttribute('data-xvm-rate-hidden');
+      } else if (art.getAttribute(HIDE_ATTR)) {
+        art.removeAttribute(HIDE_ATTR);
+        restoreCellIfNoOtherXvmMarker(art, cell);
       }
     }
   }
@@ -211,14 +253,26 @@
     return m ? m[1] : null;
   }
 
+  function cellForArticle(art) {
+    return art.closest('[data-testid="cellInnerDiv"]') || art;
+  }
+
+  function hasOtherXvmHideMarker(art) {
+    return OTHER_HIDE_ATTRS.some((attr) => art.hasAttribute(attr));
+  }
+
+  function restoreCellIfNoOtherXvmMarker(art, cell = cellForArticle(art)) {
+    if (!hasOtherXvmHideMarker(art)) cell.style.display = '';
+  }
+
   // === Tier revoke at runtime ===
   // If user's tier drops mid-session (trial expired / license revoked),
   // un-hide everything we previously hid so they regain Free behavior.
   function revoke() {
-    document.querySelectorAll('article[data-xvm-rate-hidden]').forEach((art) => {
-      const cell = art.closest('[data-testid="cellInnerDiv"]') || art;
-      cell.style.display = '';
-      art.removeAttribute('data-xvm-rate-hidden');
+    document.querySelectorAll(`article[${HIDE_ATTR}]`).forEach((art) => {
+      const cell = cellForArticle(art);
+      art.removeAttribute(HIDE_ATTR);
+      restoreCellIfNoOtherXvmMarker(art, cell);
     });
   }
 
@@ -246,6 +300,9 @@
   function activate() {
     if (!gateOpen()) return;
     subscribe();
+    // Observe even while disabled. If the user turns the filter OFF, virtual
+    // scroll can remount cells that were hidden earlier; applyHidesNow()
+    // will revoke our own markers instead of leaving stale display:none.
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
@@ -260,7 +317,7 @@
       mo.disconnect();
       revoke();
     },
-    _debug: { classify, applyHidesNow, gateOpen },
+    _debug: { classify, applyHidesNow, gateOpen, scopeFromPath, scopeEnabled },
   };
 
   activate();

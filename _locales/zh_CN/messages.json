@@ -352,6 +352,8 @@
   "rfScopeLegend":   { "message": "作用域" },
   "rfScopeHome":     { "message": "首页" },
   "rfScopeList":     { "message": "列表" },
+  "rfScopeProfile":  { "message": "博主主页" },
+  "rfScopeStatus":   { "message": "帖子详情" },
   "rfShortLegend":   { "message": "短推 — 任一过线即显示" },
   "rfLongLegend":    { "message": "X Articles 长文 — 任一过线即显示" },
   "rfRatePerMin":    { "message": "views / 分钟 ≥" },
@@ -411,7 +413,6 @@
   "chipTrialDays":  { "message": "还剩 $DAYS$ 天", "placeholders": { "DAYS": { "content": "$1" } } },
   "chipTrialOne":   { "message": "还剩 1 天" },
   "themeLabel":     { "message": "主题" },
-  "themeHint":      { "message": "在暖色明亮与深色之间切换,选择已同步到 chrome.storage.sync。" },
   "themeSwitchToDark":  { "message": "切换到深色" },
   "themeSwitchToLight": { "message": "切换到明亮" },
   "themeFollowSystem":  { "message": "跟随系统" },
@@ -420,5 +421,14 @@
   "contentLbHotProSub":    { "message": "隐藏低浏览量推文,保留真正在传播的内容" },
   "contentLbHotMonthly":   { "message": "月度 ¥9/月" },
   "contentLbHotAnnual":    { "message": "年度 ¥90/年 (省 17%)" },
-  "advAppearanceTitle": { "message": "外观" }
+  "advAppearanceTitle": { "message": "外观" },
+  "lfTitle":        { "message": "X List 成员过滤 (Pro)" },
+  "lfLockedHint":   { "message": "升级 Pro 后可按 X List 成员过滤时间线。" },
+  "lfEnabled":      { "message": "只显示已保存 List 成员的推文" },
+  "lfInputLabel":   { "message": "List URL 或 listId" },
+  "lfAdd":          { "message": "添加 List" },
+  "lfCaptureHint":  { "message": "先保存 List,再打开对应 X List 页面一次,扩展即可完成成员捕获。" },
+  "lfInvalidInput": { "message": "请输入有效的 X List URL 或数字 listId。" },
+  "lfAddedOk":      { "message": "List 已保存。请在 X 打开它以捕获成员。" },
+  "lfMembers":      { "message": "成员" }
 }

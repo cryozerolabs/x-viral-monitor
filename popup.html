@@ -234,6 +234,7 @@
     .rf-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
     .rf-section[data-locked="1"] { opacity: 0.55; }
     .rf-section[data-locked="1"] input, .rf-section[data-locked="1"] button { cursor: not-allowed; }
+    .lf-section { margin-top: 12px; }
 
     /* Section header (polish #4: "🔵 流速过滤" inside Filter tab) */
     .rf-title {
@@ -320,17 +321,16 @@
     .rf-msg[data-kind="ok"]  { color: var(--ok); }
     .rf-msg[data-kind="err"] { color: var(--danger); }
 
-    /* Polish #6: shadcn square checkbox for Home/Lists + advanced toggles */
+    /* Rate-filter scope toggles use the same shadcn pill switch as binary feature controls. */
     .rf-scope { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+    .rf-scope-title { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
     .rf-scope label {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
       padding: 0; font-size: 13px; color: var(--text); cursor: pointer;
       user-select: none;
     }
     input[type="checkbox"].xvm-cb,
-    .rf-scope input[type="checkbox"],
-    .feature-row > input[type="checkbox"],
-    .inline-toggle input[type="checkbox"] {
+    .col-list input[type="checkbox"] {
       appearance: none; -webkit-appearance: none;
       width: 18px; height: 18px; flex: 0 0 18px;
       border: 1.5px solid var(--border-hi); border-radius: 4px;
@@ -339,24 +339,18 @@
       transition: background 120ms, border-color 120ms;
     }
     input[type="checkbox"].xvm-cb:checked,
-    .rf-scope input[type="checkbox"]:checked,
-    .feature-row > input[type="checkbox"]:checked,
-    .inline-toggle input[type="checkbox"]:checked {
+    .col-list input[type="checkbox"]:checked {
       background: var(--accent); border-color: var(--accent);
     }
     input[type="checkbox"].xvm-cb:checked::after,
-    .rf-scope input[type="checkbox"]:checked::after,
-    .feature-row > input[type="checkbox"]:checked::after,
-    .inline-toggle input[type="checkbox"]:checked::after {
+    .col-list input[type="checkbox"]:checked::after {
       content: ""; position: absolute; left: 4px; top: 1px;
       width: 6px; height: 11px;
       border: solid #0b1120; border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
     input[type="checkbox"].xvm-cb:focus-visible,
-    .rf-scope input[type="checkbox"]:focus-visible,
-    .feature-row > input[type="checkbox"]:focus-visible,
-    .inline-toggle input[type="checkbox"]:focus-visible {
+    .col-list input[type="checkbox"]:focus-visible {
       outline: 2px solid var(--accent); outline-offset: 2px;
     }
 
@@ -392,30 +386,84 @@
       padding: 6px 8px; border: 1.5px solid var(--border-hi); border-radius: var(--radius-xs);
       background: var(--bg); color: var(--text); font: inherit; font-size: 12px;
     }
-    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+    input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
     textarea { min-height: 80px; resize: vertical; }
 
-    /* Polish: shadcn-style <select> — appearance:none + chevron mask icon */
-    select {
-      appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    /* shadcn-style custom Select: trigger + listbox, no native dropdown. */
+    .xvm-select { position: relative; width: 100%; }
+    .xvm-select-trigger {
+      width: 100%;
+      min-height: 34px;
       padding: 7px 32px 7px 10px;
       border: 1.5px solid var(--border-hi);
       border-radius: var(--radius-xs);
-      background: var(--bg); color: var(--text);
-      font: inherit; font-size: 12.5px;
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      font-size: 12.5px;
+      line-height: 1.35;
+      text-align: left;
       cursor: pointer;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      background-size: 14px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
-    select:hover { border-color: var(--accent); }
-    select option {
-      background: var(--surface); color: var(--text);
-      padding: 6px;
+    .xvm-select-trigger:hover { border-color: var(--accent); }
+    .xvm-select-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+    .xvm-select-value {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    body[data-theme="light"] select {
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236e5b4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    .xvm-select-chev {
+      position: absolute;
+      right: 9px;
+      width: 14px;
+      height: 14px;
+      pointer-events: none;
+      color: var(--muted);
+      transition: transform 120ms;
+    }
+    .xvm-select[data-open="1"] .xvm-select-chev { transform: rotate(180deg); }
+    .xvm-select-menu {
+      position: absolute;
+      z-index: 20;
+      left: 0;
+      right: 0;
+      top: calc(100% + 4px);
+      max-height: 180px;
+      overflow: auto;
+      padding: 4px;
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+      display: none;
+    }
+    .xvm-select[data-open="1"] .xvm-select-menu { display: block; }
+    .xvm-select-option {
+      width: 100%;
+      padding: 7px 8px;
+      border: 0;
+      border-radius: var(--radius-xs);
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 12.5px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .xvm-select-option:hover,
+    .xvm-select-option:focus-visible {
+      outline: none;
+      background: var(--surface-2);
+    }
+    .xvm-select-option[aria-selected="true"] {
+      background: var(--accent);
+      color: #0b1120;
+      font-weight: 600;
     }
     button.adv-btn {
       padding: 6px 12px; border: 1px solid var(--border-hi);
@@ -435,9 +483,8 @@
     .info-box .tier .icon { width: 18px; text-align: center; }
     .info-box .tier .label { flex: 1; }
     .info-box .tier .range { color: var(--muted); font-variant-numeric: tabular-nums; }
-    .feature-row { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); }
+    .feature-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); }
     .feature-row:first-child { border-top: 0; }
-    .feature-row input[type="checkbox"] { margin-top: 2px; }
     .ft-body { flex: 1; }
     .ft-title { font-size: 12.5px; font-weight: 600; }
     .ft-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
@@ -450,7 +497,8 @@
     .ft-lb-reset-btn:hover { border-color: var(--accent); color: var(--accent); }
     .ft-lb-reset-msg { font-size: 11px; color: var(--ok); }
     .grok-template .grok-template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
-    .inline-toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 6px 0; color: var(--text-2); }
+    .inline-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; margin: 6px 0; color: var(--text-2); }
+    .feature-row > .switch, .inline-toggle > .switch { margin-top: 1px; }
     .divider { height: 1px; background: var(--border); margin: 10px 0; }
 
     /* === Footer === */
@@ -541,6 +589,7 @@
       <!-- popup-rate-filter.js renders into #rate-filter-section with
            nested Short/Long sub-tabs (see rebuilt buildSection). -->
       <div id="rate-filter-section" class="rf-section" data-locked="0"></div>
+      <div id="list-member-filter-section" class="rf-section lf-section" data-locked="0"></div>
     </section>
 
     <!-- ============ Tab: Leaderboard ============ -->
@@ -559,10 +608,14 @@
             <label class="field"><span data-i18n="thresholdViral">🔥 Viral threshold</span><input id="viral" type="number" min="2" step="1" required></label>
           </div>
           <label class="field"><span data-i18n="badgeStyleLabel">🏷️ Badge style</span>
-            <select id="badge-style">
-              <option value="pill-solid" data-i18n="badgeStylePillSolid">Pill solid</option>
-              <option value="inline-classic" data-i18n="badgeStyleInlineClassic">Inline classic</option>
-            </select>
+            <div class="xvm-select" data-select-name="badge-style">
+              <input id="badge-style" type="hidden" value="pill-solid">
+              <button type="button" class="xvm-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="xvm-select-value">Pill solid</span>
+                <svg class="xvm-select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="xvm-select-menu" role="listbox"></div>
+            </div>
           </label>
           <div class="actions">
             <button type="button" id="reset" class="adv-btn" data-i18n="btnReset">Reset</button>
@@ -575,7 +628,6 @@
       <div class="panel-card">
         <h3 data-i18n="advLeaderboardTitle">Leaderboard details</h3>
         <div class="feature-row">
-          <input id="feat-leaderboard" type="checkbox">
           <div class="ft-body">
             <label for="feat-leaderboard"><div class="ft-title" data-i18n="featureLeaderboardTitle">📊 Velocity leaderboard</div></label>
             <div class="ft-lb-count"><label for="lb-count" data-i18n="featureLeaderboardShowTop">Show top</label><input id="lb-count" type="number" min="1" max="50" step="1"><span data-i18n="featureLeaderboardTweets">tweets</span></div>
@@ -588,6 +640,7 @@
               <span class="ft-lb-reset-msg" id="lb-reset-msg"></span>
             </div>
           </div>
+          <label class="switch" for="feat-leaderboard" aria-label="Velocity leaderboard"><input id="feat-leaderboard" type="checkbox"><span class="slider"></span></label>
         </div>
       </div>
     </section>
@@ -601,22 +654,31 @@
           <span data-i18n="themeLabel">Theme</span>
           <button type="button" id="theme-toggle-about" class="adv-btn"></button>
         </div>
-        <div class="ft-desc" data-i18n="themeHint">Switch between warm light and dark mode. Your choice is synced to chrome.storage.sync.</div>
       </div>
 
       <div class="panel-card">
         <h3 data-i18n="advOtherFeaturesTitle">Other features</h3>
-        <div class="feature-row"><input id="feat-copy-md" type="checkbox"><div class="ft-body"><label for="feat-copy-md"><div class="ft-title" data-i18n="featureCopyMdTitle">📋 Copy tweet as Markdown</div><div class="ft-desc" data-i18n="featureCopyMdDesc">Adds a "Copy as Markdown" entry at the bottom of X's native share menu.</div></label></div></div>
-        <div class="feature-row"><input id="feat-starchart" type="checkbox"><div class="ft-body"><label for="feat-starchart"><div class="ft-title" data-i18n="popupStarChartLabel">⭐ Thank-You Star Chart</div><div class="ft-desc" data-i18n="popupStarChartHint">Adds a star-chart option to the share menu of any tweet.</div></label></div></div>
-        <div class="feature-row"><input id="feat-bookmark-count" type="checkbox"><div class="ft-body"><label for="feat-bookmark-count"><div class="ft-title" data-i18n="featureBookmarkCountTitle">🔖 Show bookmark count</div><div class="ft-desc" data-i18n="featureBookmarkCountDesc">Display the bookmark count next to each tweet's bookmark button on the timeline.</div></label></div></div>
+        <div class="feature-row"><div class="ft-body"><label for="feat-copy-md"><div class="ft-title" data-i18n="featureCopyMdTitle">📋 Copy tweet as Markdown</div><div class="ft-desc" data-i18n="featureCopyMdDesc">Adds a "Copy as Markdown" entry at the bottom of X's native share menu.</div></label></div><label class="switch" for="feat-copy-md" aria-label="Copy tweet as Markdown"><input id="feat-copy-md" type="checkbox"><span class="slider"></span></label></div>
+        <div class="feature-row"><div class="ft-body"><label for="feat-starchart"><div class="ft-title" data-i18n="popupStarChartLabel">⭐ Thank-You Star Chart</div><div class="ft-desc" data-i18n="popupStarChartHint">Adds a star-chart option to the share menu of any tweet.</div></label></div><label class="switch" for="feat-starchart" aria-label="Thank-You Star Chart"><input id="feat-starchart" type="checkbox"><span class="slider"></span></label></div>
+        <div class="feature-row"><div class="ft-body"><label for="feat-bookmark-count"><div class="ft-title" data-i18n="featureBookmarkCountTitle">🔖 Show bookmark count</div><div class="ft-desc" data-i18n="featureBookmarkCountDesc">Display the bookmark count next to each tweet's bookmark button on the timeline.</div></label></div><label class="switch" for="feat-bookmark-count" aria-label="Show bookmark count"><input id="feat-bookmark-count" type="checkbox"><span class="slider"></span></label></div>
       </div>
 
       <div class="panel-card grok-template">
         <h3 data-i18n="advGrokShortTitle">Grok reply — short tweet template</h3>
-        <div class="grok-template-grid"><select id="grok-template-select" aria-label="Grok prompt template"></select><input id="grok-template-name" type="text" aria-label="Grok prompt template name"></div>
+        <div class="grok-template-grid">
+          <div class="xvm-select" data-select-name="grok-template-select">
+            <input id="grok-template-select" type="hidden" aria-label="Grok prompt template">
+            <button type="button" class="xvm-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="xvm-select-value"></span>
+              <svg class="xvm-select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="xvm-select-menu" role="listbox"></div>
+          </div>
+          <input id="grok-template-name" type="text" aria-label="Grok prompt template name">
+        </div>
         <label class="field" for="grok-prompt"><span>推文模板（短推文，&lt;600 字）</span><textarea id="grok-prompt" spellcheck="false"></textarea></label>
         <div class="ft-desc" data-i18n="popupGrokPromptHint">Use [推文内容] where the source tweet should be inserted.</div>
-        <label class="inline-toggle" for="grok-temp-chat"><input id="grok-temp-chat" type="checkbox"><span data-i18n="popupGrokTempChatLabel">Use temporary chat (don't pollute Grok history)</span></label>
+        <label class="inline-toggle" for="grok-temp-chat"><span data-i18n="popupGrokTempChatLabel">Use temporary chat (don't pollute Grok history)</span><span class="switch"><input id="grok-temp-chat" type="checkbox"><span class="slider"></span></span></label>
         <div class="actions compact">
           <button type="button" id="grok-prompt-add" class="adv-btn" data-i18n="btnAdd">Add</button>
           <button type="button" id="grok-prompt-save" class="adv-btn" data-i18n="btnSave">Save</button>
@@ -627,7 +689,17 @@
 
       <div class="panel-card grok-template">
         <h3 data-i18n="advGrokArticleTitle">Grok reply — article template</h3>
-        <div class="grok-template-grid"><select id="grok-article-template-select" aria-label="Grok article prompt template"></select><input id="grok-article-template-name" type="text" aria-label="Grok article template name"></div>
+        <div class="grok-template-grid">
+          <div class="xvm-select" data-select-name="grok-article-template-select">
+            <input id="grok-article-template-select" type="hidden" aria-label="Grok article prompt template">
+            <button type="button" class="xvm-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="xvm-select-value"></span>
+              <svg class="xvm-select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="xvm-select-menu" role="listbox"></div>
+          </div>
+          <input id="grok-article-template-name" type="text" aria-label="Grok article template name">
+        </div>
         <label class="field" for="grok-article-prompt"><span>文章模板（X Article / 长文，≥600 字时使用）</span><textarea id="grok-article-prompt" spellcheck="false"></textarea></label>
         <div class="ft-desc">回复 X 上的长文 / Article 时自动使用这组模板。</div>
         <div class="actions compact">
@@ -651,6 +723,7 @@
   <script src="src/premium/license/tier-logic.js"></script>
   <script src="src/premium/license/popup-pro.js"></script>
   <script src="src/premium/rate-filter/popup-rate-filter.js"></script>
+  <script src="src/premium/list-member-filter/popup-list-member-filter.js"></script>
   <script src="popup.js"></script>
   <script src="popup-dashboard.js"></script>
 </body>

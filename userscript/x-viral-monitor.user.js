@@ -430,8 +430,7 @@ html[data-xvm-badge-style="inline-classic"] .xvm-badge--red { color: #f44336; ba
   font-size: 11px;
   color: #6e5b4d;
 }
-.xvm-setting-row input,
-.xvm-setting-row select {
+.xvm-setting-row input {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -441,6 +440,78 @@ html[data-xvm-badge-style="inline-classic"] .xvm-badge--red { color: #f44336; ba
   background: #fff;
   color: #24180f;
   font: 11px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.xvm-setting-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.xvm-setting-select-trigger {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: 1px solid rgba(86, 60, 34, 0.22);
+  border-radius: 6px;
+  padding: 4px 7px;
+  background: #fff;
+  color: #24180f;
+  font: 11px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.xvm-setting-select-trigger:focus-visible {
+  outline: 2px solid rgba(191, 90, 42, 0.42);
+  outline-offset: 1px;
+}
+.xvm-setting-select-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xvm-setting-select-chev {
+  color: #8a6a55;
+  transition: transform 0.12s;
+}
+.xvm-setting-select[data-open="1"] .xvm-setting-select-chev { transform: rotate(180deg); }
+.xvm-setting-select-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  display: none;
+  padding: 4px;
+  border: 1px solid rgba(86, 60, 34, 0.22);
+  border-radius: 8px;
+  background: #fffaf3;
+  box-shadow: 0 10px 22px rgba(36, 24, 15, 0.16);
+}
+.xvm-setting-select[data-open="1"] .xvm-setting-select-menu { display: block; }
+.xvm-setting-select-choice {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 7px;
+  background: transparent;
+  color: #24180f;
+  font: 11px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.xvm-setting-select-choice:hover,
+.xvm-setting-select-choice:focus-visible {
+  outline: none;
+  background: #f5ede1;
+}
+.xvm-setting-select-choice[aria-selected="true"] {
+  background: #bf5a2a;
+  color: #fffaf3;
+  font-weight: 600;
 }
 .xvm-setting-row input[type="checkbox"] {
   width: auto;
@@ -860,10 +931,17 @@ article[data-testid="tweet"].xvm-article-linked {
         </label>
         <label class="xvm-setting-row">
           <span>${escapeHtml(t('settingBadgeStyle'))}</span>
-          <select class="xvm-setting-badge-style">
-            <option value="pill-solid">${escapeHtml(t('settingBadgePillSolid'))}</option>
-            <option value="inline-classic">${escapeHtml(t('settingBadgeInlineClassic'))}</option>
-          </select>
+          <div class="xvm-setting-select" data-open="0">
+            <input class="xvm-setting-badge-style" type="hidden">
+            <button class="xvm-setting-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="xvm-setting-select-label"></span>
+              <span class="xvm-setting-select-chev" aria-hidden="true">⌄</span>
+            </button>
+            <div class="xvm-setting-select-menu" role="listbox">
+              <button class="xvm-setting-select-choice" type="button" role="option" data-value="pill-solid">${escapeHtml(t('settingBadgePillSolid'))}</button>
+              <button class="xvm-setting-select-choice" type="button" role="option" data-value="inline-classic">${escapeHtml(t('settingBadgeInlineClassic'))}</button>
+            </div>
+          </div>
         </label>
         <label class="xvm-setting-row">
           <span>${escapeHtml(t('settingTrending'))}</span>
@@ -910,6 +988,7 @@ article[data-testid="tweet"].xvm-article-linked {
     const count = leaderboardEl.querySelector('.xvm-setting-count');
     if (enabled) enabled.checked = settings.leaderboardEnabled !== false;
     if (badgeStyle) badgeStyle.value = settings.badgeStyle;
+    setSettingsBadgeStyleValue(settings.badgeStyle);
     if (trending) trending.value = String(settings.trending);
     if (viral) viral.value = String(settings.viral);
     if (count) count.value = String(settings.leaderboardCount);
@@ -932,6 +1011,7 @@ article[data-testid="tweet"].xvm-article-linked {
     const panel = leaderboardEl?.querySelector('.xvm-settings');
     const save = leaderboardEl?.querySelector('.xvm-settings-save');
     if (!btn || !panel || !save) return;
+    installSettingsSelect();
     syncSettingsForm();
     btn.addEventListener('mousedown', (event) => event.stopPropagation());
     btn.addEventListener('click', (event) => {
@@ -962,6 +1042,84 @@ article[data-testid="tweet"].xvm-article-linked {
       applySettings();
       syncSettingsForm();
       panel.classList.remove('xvm-settings-open');
+    });
+  }
+
+  function setSettingsBadgeStyleValue(value) {
+    const root = leaderboardEl?.querySelector('.xvm-setting-select');
+    const input = root?.querySelector('.xvm-setting-badge-style');
+    const label = root?.querySelector('.xvm-setting-select-label');
+    const choices = root?.querySelectorAll('.xvm-setting-select-choice') || [];
+    const next = value === 'inline-classic' ? 'inline-classic' : 'pill-solid';
+    if (input) input.value = next;
+    let text = '';
+    choices.forEach((choice) => {
+      const selected = choice.dataset.value === next;
+      choice.setAttribute('aria-selected', selected ? 'true' : 'false');
+      if (selected) text = choice.textContent || '';
+    });
+    if (label) label.textContent = text;
+  }
+
+  function closeSettingsSelect() {
+    const root = leaderboardEl?.querySelector('.xvm-setting-select');
+    const trigger = root?.querySelector('.xvm-setting-select-trigger');
+    if (!root || !trigger) return;
+    root.dataset.open = '0';
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function openSettingsSelect() {
+    const root = leaderboardEl?.querySelector('.xvm-setting-select');
+    const trigger = root?.querySelector('.xvm-setting-select-trigger');
+    if (!root || !trigger) return;
+    root.dataset.open = '1';
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function installSettingsSelect() {
+    const root = leaderboardEl?.querySelector('.xvm-setting-select');
+    const trigger = root?.querySelector('.xvm-setting-select-trigger');
+    const choices = root?.querySelectorAll('.xvm-setting-select-choice') || [];
+    if (!root || !trigger || root.dataset.wired === '1') return;
+    root.dataset.wired = '1';
+    trigger.addEventListener('click', () => {
+      if (root.dataset.open === '1') closeSettingsSelect();
+      else openSettingsSelect();
+    });
+    trigger.addEventListener('keydown', (event) => {
+      if (!['Enter', ' ', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      openSettingsSelect();
+      root.querySelector('.xvm-setting-select-choice[aria-selected="true"]')?.focus();
+    });
+    choices.forEach((choice) => {
+      choice.addEventListener('click', () => {
+        setSettingsBadgeStyleValue(choice.dataset.value);
+        closeSettingsSelect();
+        trigger.focus();
+      });
+      choice.addEventListener('keydown', (event) => {
+        const list = [...choices];
+        const index = list.indexOf(choice);
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeSettingsSelect();
+          trigger.focus();
+        } else if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          list[Math.min(index + 1, list.length - 1)]?.focus();
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          list[Math.max(index - 1, 0)]?.focus();
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          choice.click();
+        }
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (!root.contains(event.target)) closeSettingsSelect();
     });
   }
 
