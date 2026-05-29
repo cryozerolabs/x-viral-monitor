@@ -11,6 +11,113 @@ const DEFAULT_COLUMNS = [
   { id: 'velocity', visible: true  },
 ];
 const KNOWN_COLUMN_IDS = DEFAULT_COLUMNS.map((c) => c.id);
+const LANGUAGE_KEY = 'language';
+const SUPPORTED_LANGUAGE_IDS = ['auto', 'zh_CN', 'en', 'ja'];
+
+function normalizeLanguage(raw) {
+  return SUPPORTED_LANGUAGE_IDS.includes(raw) ? raw : 'auto';
+}
+
+function getBrowserLocaleId() {
+  try {
+    const ui = chrome?.i18n?.getUILanguage?.() || navigator.language || '';
+    const lower = ui.toLowerCase();
+    if (lower.startsWith('zh')) return 'zh_CN';
+    if (lower.startsWith('ja')) return 'ja';
+  } catch (_) {}
+  return 'en';
+}
+
+function getEffectiveLanguageId(pref = 'auto') {
+  const normalized = normalizeLanguage(pref);
+  return normalized === 'auto' ? getBrowserLocaleId() : normalized;
+}
+
+function normalizeSubstitutions(substitutions) {
+  if (substitutions == null) return [];
+  return Array.isArray(substitutions) ? substitutions.map(String) : [String(substitutions)];
+}
+
+function formatLocaleMessage(entry, substitutions) {
+  if (!entry?.message) return '';
+  const subs = normalizeSubstitutions(substitutions);
+  let message = String(entry.message).replace(/\$\$/g, '\u0000');
+  const placeholders = entry.placeholders || {};
+  for (const [name, meta] of Object.entries(placeholders)) {
+    const match = String(meta?.content || '').match(/^\$(\d+)$/);
+    const value = match ? (subs[Number(match[1]) - 1] ?? '') : String(meta?.content || '');
+    message = message.replace(new RegExp(`\\$${name}\\$`, 'gi'), value);
+  }
+  message = message.replace(/\$(\d+)/g, (_, n) => subs[Number(n) - 1] ?? '');
+  return message.replace(/\u0000/g, '$');
+}
+
+const localeBundleCache = new Map();
+
+async function loadLocaleBundle(languageId) {
+  if (localeBundleCache.has(languageId)) return localeBundleCache.get(languageId);
+  try {
+    const res = await fetch(chrome.runtime.getURL(`_locales/${languageId}/messages.json`));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    localeBundleCache.set(languageId, json);
+    return json;
+  } catch (_) {
+    localeBundleCache.set(languageId, null);
+    return null;
+  }
+}
+
+const GROK_DEFAULTS_BY_LANGUAGE = {
+  zh_CN: {
+    promptTemplates: [
+      { id: 'default', name: '默认评论', prompt: '[推文内容]\n\n为我生成针对该推文的10条评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+      { id: 'short-cn', name: '中文短评', prompt: '[推文内容]\n\n为该推文生成10条自然、简短、像真人回复的中文评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+      { id: 'sharp', name: '犀利观点', prompt: '[推文内容]\n\n为该推文生成10条有观点、有信息密度、但不人身攻击的评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+      { id: 'tieba-laoge', name: '贴吧老哥', prompt: '[推文内容]\n\n用贴吧老哥的语气为该推文生成10条评论。整体阴阳怪气，但不带脏字、不人身攻击；保持口语感，不要装文艺、不要写得像新闻评论；每条评论控制在 30 字以内，简短精悍。\n每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+    ],
+    articlePromptTemplates: [
+      { id: 'article-default', name: '文章评论', prompt: '以下是一篇 X 长文 / Article：\n\n[推文内容]\n\n为这篇长文生成10条评论。要求：每条评论引用文章中具体的观点或论据进行回应（赞同/质疑/补充），避免笼统的"很有启发"这类空话；语气自然像真人；每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+      { id: 'article-deep', name: '深度回应', prompt: '以下是一篇长文：\n\n[推文内容]\n\n挑选这篇长文中最值得讨论的3-5个核心论点，针对每个论点给出1-2条有信息密度的评论（提出延伸思考、反例、或个人经验），每条评论只包含可直接发布的评论正文，用代码块包裹。' },
+    ],
+  },
+  en: {
+    promptTemplates: [
+      { id: 'default', name: 'Natural replies', prompt: '[推文内容]\n\nWrite 10 natural English replies to this X post. Requirements:\n- Sound like real X replies, not marketing copy or a formal article comment\n- Each reply should make one clear point: agree, add context, ask a sharp question, or offer a mild counterpoint\n- Avoid generic praise, outrage bait, personal attacks, and hashtags\n- Keep each reply concise, roughly 8-28 words\n- Output only ready-to-post reply text, each inside its own code block.' },
+      { id: 'sharp', name: 'Sharp but fair', prompt: '[推文内容]\n\nWrite 10 English replies to this X post with a sharper point of view. Requirements:\n- Be specific, thoughtful, and concise\n- You may challenge assumptions, add a counterexample, or clarify the tradeoff\n- Stay fair; no insults, no dunking, no culture-war bait\n- Keep each reply around 12-35 words\n- Output only ready-to-post reply text, each inside its own code block.' },
+      { id: 'casual-en', name: 'Casual short replies', prompt: '[推文内容]\n\nWrite 10 casual English replies for this X post. Requirements:\n- Conversational and human, like a normal user replying on X\n- Short, direct, and not over-polished\n- Avoid cringe slang, hashtags, and corporate tone\n- Keep each reply under 25 words\n- Output only ready-to-post reply text, each inside its own code block.' },
+    ],
+    articlePromptTemplates: [
+      { id: 'article-default', name: 'Article replies', prompt: 'Here is an X long-form post / Article:\n\n[推文内容]\n\nWrite 10 English replies. Requirements:\n- Each reply should respond to a specific claim, argument, example, or conclusion from the article\n- Mix agreement, critique, added context, and follow-up questions\n- Avoid vague praise like “great insights”\n- Keep each reply specific and ready to post\n- Output only the reply text, each inside its own code block.' },
+      { id: 'article-deep', name: 'Deeper discussion', prompt: 'Here is an X long-form post / Article:\n\n[推文内容]\n\nIdentify 3-5 discussion-worthy points from the article and write 10 English replies. Requirements:\n- Each reply should focus on one concrete point\n- Add a useful extension, counterexample, practical constraint, or personal-experience angle\n- Sound natural, not like an essay summary\n- Output only ready-to-post reply text, each inside its own code block.' },
+    ],
+  },
+  ja: {
+    promptTemplates: [
+      { id: 'default', name: '自然な返信', prompt: '[推文内容]\n\nこの X 投稿に対する自然な日本語返信を 10 件作成してください。条件：\n- 実際の X の返信らしく、宣伝文や記事コメントのようにしない\n- 各返信は、共感・補足・軽い疑問・別視点のいずれかを 1 つだけ扱う\n- 空っぽな称賛、過度な煽り、個人攻撃は避ける\n- 1 件あたり 15〜45 字程度\n- そのまま投稿できる本文だけを、各返信ごとにコードブロックで出力する。' },
+      { id: 'sharp', name: '鋭めだが丁寧', prompt: '[推文内容]\n\nこの X 投稿に対する日本語返信を 10 件作成してください。少し鋭い視点で、ただし丁寧に。条件：\n- 前提への疑問、反例、補足、論点整理のいずれかを入れる\n- 皮肉、人格攻撃、決めつけは避ける\n- 1 件あたり 20〜55 字程度\n- そのまま投稿できる本文だけを、各返信ごとにコードブロックで出力する。' },
+      { id: 'casual-ja', name: '短めの口語返信', prompt: '[推文内容]\n\nこの X 投稿に対する短い日本語返信を 10 件作成してください。条件：\n- 口語的で自然、AI っぽくしない\n- くだけすぎず、普通のユーザーの返信に見える文体\n- 1 件あたり 10〜30 字程度\n- そのまま投稿できる本文だけを、各返信ごとにコードブロックで出力する。' },
+    ],
+    articlePromptTemplates: [
+      { id: 'article-default', name: '長文への返信', prompt: '以下は X の長文投稿 / Article です：\n\n[推文内容]\n\n日本語の返信を 10 件作成してください。条件：\n- 各返信は本文中の具体的な主張、根拠、例、結論のどれかに反応する\n- 賛同、疑問、補足、追加の問いをバランスよく混ぜる\n- 「勉強になりました」のような抽象的な感想だけにしない\n- 1 件あたり 30〜80 字程度\n- そのまま投稿できる本文だけを、各返信ごとにコードブロックで出力する。' },
+      { id: 'article-deep', name: '深めの議論', prompt: '以下は X の長文投稿 / Article です：\n\n[推文内容]\n\n本文から議論すべきポイントを 3〜5 個選び、日本語の返信を 10 件作成してください。条件：\n- 各返信は 1 つの具体的な論点に絞る\n- 追加視点、反例、現実的な制約、個人的な経験の角度を入れる\n- 論文要約のようにせず、自然な返信文にする\n- そのまま投稿できる本文だけを、各返信ごとにコードブロックで出力する。' },
+    ],
+  },
+};
+
+function getLocalizedGrokDefaults(languageId = getBrowserLocaleId()) {
+  const lang = GROK_DEFAULTS_BY_LANGUAGE[languageId] ? languageId : 'en';
+  const defs = GROK_DEFAULTS_BY_LANGUAGE[lang];
+  return {
+    grokCommentPrompt: defs.promptTemplates[0].prompt,
+    grokPromptTemplates: defs.promptTemplates.map((tpl) => ({ ...tpl })),
+    grokArticlePromptTemplates: defs.articlePromptTemplates.map((tpl) => ({ ...tpl })),
+    grokSelectedPromptId: defs.promptTemplates[0].id,
+    grokSelectedArticlePromptId: defs.articlePromptTemplates[0].id,
+  };
+}
+
+const LOCALIZED_GROK_DEFAULTS = getLocalizedGrokDefaults(getBrowserLocaleId());
 const CONTENT_MESSAGE_KEYS = [
   'contentViews',
   'contentLikes',
@@ -84,20 +191,13 @@ const DEFAULT_FEATURES = {
   badgeStyle: 'pill-solid',
   leaderboardCount: 10,
   leaderboardColumns: DEFAULT_COLUMNS,
-  grokCommentPrompt: '[推文内容]\n\n为我生成针对该推文的10条评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。',
-  grokPromptTemplates: [
-    { id: 'default', name: '默认评论', prompt: '[推文内容]\n\n为我生成针对该推文的10条评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-    { id: 'short-cn', name: '中文短评', prompt: '[推文内容]\n\n为该推文生成10条自然、简短、像真人回复的中文评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-    { id: 'sharp', name: '犀利观点', prompt: '[推文内容]\n\n为该推文生成10条有观点、有信息密度、但不人身攻击的评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-    { id: 'tieba-laoge', name: '贴吧老哥', prompt: '[推文内容]\n\n用贴吧老哥的语气为该推文生成10条评论。要求：\n- 每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-  ],
-  grokArticlePromptTemplates: [
-    { id: 'article-default', name: '文章评论', prompt: '以下是一篇 X 长文 / Article：\n\n[推文内容]\n\n为这篇长文生成10条评论。要求：每条评论引用文章中具体的观点或论据进行回应（赞同/质疑/补充），避免笼统的"很有启发"这类空话；语气自然像真人；每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-    { id: 'article-deep', name: '深度回应', prompt: '以下是一篇长文：\n\n[推文内容]\n\n挑选这篇长文中最值得讨论的3-5个核心论点，针对每个论点给出1-2条有信息密度的评论（提出延伸思考、反例、或个人经验），每条评论只包含可直接发布的评论正文，用代码块包裹。' },
-  ],
-  grokSelectedPromptId: 'default',
-  grokSelectedArticlePromptId: 'article-default',
+  grokCommentPrompt: LOCALIZED_GROK_DEFAULTS.grokCommentPrompt,
+  grokPromptTemplates: LOCALIZED_GROK_DEFAULTS.grokPromptTemplates,
+  grokArticlePromptTemplates: LOCALIZED_GROK_DEFAULTS.grokArticlePromptTemplates,
+  grokSelectedPromptId: LOCALIZED_GROK_DEFAULTS.grokSelectedPromptId,
+  grokSelectedArticlePromptId: LOCALIZED_GROK_DEFAULTS.grokSelectedArticlePromptId,
   grokTemporaryChat: true,
+  language: 'auto',
 };
 const STORAGE_DEFAULTS = { ...DEFAULT_THRESHOLDS, ...DEFAULT_FEATURES };
 
@@ -159,19 +259,23 @@ function normalizeThresholds(raw) {
   return next;
 }
 
-function getLocalizedMessages() {
+async function getLocalizedMessages(languagePref) {
+  const languageId = getEffectiveLanguageId(languagePref);
+  const bundle = normalizeLanguage(languagePref) === 'auto' ? null : await loadLocaleBundle(languageId);
   const out = {};
   for (const key of CONTENT_MESSAGE_KEYS) {
-    try {
-      out[key] = chrome.i18n.getMessage(key) || key;
-    } catch (_) {
-      out[key] = key;
+    const local = formatLocaleMessage(bundle?.[key]);
+    if (local) {
+      out[key] = local;
+      continue;
     }
+    try { out[key] = chrome.i18n.getMessage(key) || key; }
+    catch (_) { out[key] = key; }
   }
   return out;
 }
 
-function pushSettings(raw) {
+async function pushSettings(raw) {
   window.postMessage({
     type: 'XVM_SETTINGS_UPDATE',
     thresholds: normalizeThresholds(raw),
@@ -182,7 +286,9 @@ function pushSettings(raw) {
     leaderboardCount: normalizeLeaderboardCount(raw?.leaderboardCount),
     leaderboardColumns: normalizeLeaderboardColumns(raw?.leaderboardColumns),
     badgeStyle: raw?.badgeStyle === 'inline-classic' ? 'inline-classic' : 'pill-solid',
-    messages: getLocalizedMessages(),
+    language: normalizeLanguage(raw?.language),
+    effectiveLanguage: getEffectiveLanguageId(raw?.language),
+    messages: await getLocalizedMessages(raw?.language),
   }, '*');
 }
 
@@ -415,8 +521,8 @@ safeChromeCall(() => {
       const pref = changes.theme.newValue || 'system';
       window.postMessage({ type: 'XVM_THEME_UPDATE', pref }, '*');
     }
-    const grokTouched = changes.grokCommentPrompt || changes.grokPromptTemplates || changes.grokArticlePromptTemplates || changes.grokSelectedPromptId || changes.grokSelectedArticlePromptId || changes.grokTemporaryChat;
-    if (!changes.trending && !changes.viral && !changes.featureVelocityLeaderboard && !changes.featureCopyAsMarkdown && !changes.featureStarChart && !changes.showBookmarkCount && !changes.badgeStyle && !changes.leaderboardCount && !changes.leaderboardColumns && !grokTouched) return;
+    const grokTouched = changes.grokCommentPrompt || changes.grokPromptTemplates || changes.grokArticlePromptTemplates || changes.grokSelectedPromptId || changes.grokSelectedArticlePromptId || changes.grokTemporaryChat || changes.language;
+    if (!changes.trending && !changes.viral && !changes.featureVelocityLeaderboard && !changes.featureCopyAsMarkdown && !changes.featureStarChart && !changes.showBookmarkCount && !changes.badgeStyle && !changes.leaderboardCount && !changes.leaderboardColumns && !changes.language && !grokTouched) return;
 
     safeChromeCall(() => {
       chrome.storage.sync.get(STORAGE_DEFAULTS, (items) => {

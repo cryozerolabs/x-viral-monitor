@@ -732,6 +732,18 @@
           <span data-i18n="themeLabel">Theme</span>
           <button type="button" id="theme-toggle-about" class="adv-btn"></button>
         </div>
+        <div class="rf-row">
+          <span data-i18n="languageLabel">Language</span>
+          <div class="xvm-select" data-select-name="language-select">
+            <input id="language-select" type="hidden" value="auto">
+            <button type="button" class="xvm-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="xvm-select-value">Auto</span>
+              <svg class="xvm-select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="xvm-select-menu" role="listbox"></div>
+          </div>
+          <div class="ft-desc" data-i18n="languageHint">Controls the popup, page overlays, and default Grok prompt language.</div>
+        </div>
       </div>
 
       <div class="panel-card">
@@ -754,7 +766,7 @@
           </div>
           <input id="grok-template-name" type="text" aria-label="Grok prompt template name">
         </div>
-        <label class="field" for="grok-prompt"><span>推文模板（短推文，&lt;600 字）</span><textarea id="grok-prompt" spellcheck="false"></textarea></label>
+        <label class="field" for="grok-prompt"><span data-i18n="grokShortTemplateLabel">Tweet template (short posts, &lt;600 chars)</span><textarea id="grok-prompt" spellcheck="false"></textarea></label>
         <div class="ft-desc" data-i18n="popupGrokPromptHint">Use [推文内容] where the source tweet should be inserted.</div>
         <label class="inline-toggle" for="grok-temp-chat"><span data-i18n="popupGrokTempChatLabel">Use temporary chat (don't pollute Grok history)</span><span class="switch"><input id="grok-temp-chat" type="checkbox"><span class="slider"></span></span></label>
         <div class="actions compact">
@@ -778,8 +790,8 @@
           </div>
           <input id="grok-article-template-name" type="text" aria-label="Grok article template name">
         </div>
-        <label class="field" for="grok-article-prompt"><span>文章模板（X Article / 长文，≥600 字时使用）</span><textarea id="grok-article-prompt" spellcheck="false"></textarea></label>
-        <div class="ft-desc">回复 X 上的长文 / Article 时自动使用这组模板。</div>
+        <label class="field" for="grok-article-prompt"><span data-i18n="grokArticleTemplateLabel">Article template (used for X Articles / long posts, ≥600 chars)</span><textarea id="grok-article-prompt" spellcheck="false"></textarea></label>
+        <div class="ft-desc" data-i18n="grokArticleTemplateHint">This template group is used automatically when replying to X long-form posts or Articles.</div>
         <div class="actions compact">
           <button type="button" id="grok-article-prompt-add" class="adv-btn" data-i18n="btnAdd">Add</button>
           <button type="button" id="grok-article-prompt-save" class="adv-btn" data-i18n="btnSave">Save</button>

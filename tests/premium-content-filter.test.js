@@ -824,6 +824,14 @@ describe('#123 XVM content filter v1', () => {
     expect(manifest.host_permissions).toContain('https://raw.githubusercontent.com/*');
   });
 
+  it('uses the generated PNG icon set for the toolbar action', () => {
+    expect(manifest.action?.default_icon).toEqual({
+      16: 'icons/icon16.png',
+      48: 'icons/icon48.png',
+      128: 'icons/icon128.png',
+    });
+  });
+
   it('rules.js bundled fallback stays in sync with rules.json', () => {
     const rulesJs = readFileSync(resolve(repo, 'src/premium/content-filter/rules.js'), 'utf8');
     for (const id of rulesJson.rules.map((r) => r.id)) {

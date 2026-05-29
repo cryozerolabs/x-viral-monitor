@@ -55,9 +55,21 @@ describe('iOS mobile userscript build', () => {
     expect(userscriptReadme).toContain('x-viral-monitor.debug.user.js');
     expect(userscriptReadme).toContain('https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/userscript/x-viral-monitor.mobile.user.js');
   });
+
+  it('declares Safari/mobile script metadata with maintainer and project links', () => {
+    expect(mobileScript).toContain('@author       IcyCat');
+    expect(mobileScript).toContain('@homepageURL  https://github.com/Icy-Cat/x-viral-monitor');
+    expect(mobileScript).toContain('@supportURL   https://github.com/Icy-Cat/x-viral-monitor/issues');
+  });
 });
 
 describe('desktop userscript Tampermonkey compatibility', () => {
+  it('declares desktop script metadata with maintainer, contributor, and project links', () => {
+    expect(desktopScript).toContain('@author       IcyCat, Chlience');
+    expect(desktopScript).toContain('@homepageURL  https://github.com/Icy-Cat/x-viral-monitor');
+    expect(desktopScript).toContain('@supportURL   https://github.com/Icy-Cat/x-viral-monitor/issues');
+  });
+
   it('uses a CSP-safe Tampermonkey hook path for Firefox page objects', () => {
     expect(desktopScript).toContain('@sandbox      JavaScript');
     expect(desktopScript).toContain('function getPageWindow()');

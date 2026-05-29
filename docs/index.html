@@ -107,6 +107,39 @@
       background: rgba(255,255,255,.08);
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+    }
+
+    .lang-switch button {
+      min-width: 34px;
+      height: 28px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--muted);
+      background: transparent;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .lang-switch button[aria-pressed="true"] {
+      color: #130900;
+      background: var(--amber);
+    }
+
     .hero {
       position: relative;
       min-height: calc(100vh - 68px);
@@ -497,6 +530,7 @@
       .avatar { width: 28px; height: 28px; }
       section { padding: 54px 0; }
       .btn { width: 100%; }
+      .brand span { display: none; }
     }
   </style>
 </head>
@@ -520,12 +554,19 @@
         </svg>
         <span>X Viral Monitor</span>
       </a>
-      <div class="nav-links" aria-label="主导航">
-        <a href="#install">安装</a>
-        <a href="#pro">Pro</a>
-        <a href="#versions">版本区别</a>
-        <a href="#privacy">隐私</a>
-        <a href="https://github.com/Icy-Cat/x-viral-monitor">GitHub</a>
+      <div class="nav-actions">
+        <div class="nav-links" aria-label="主导航">
+          <a href="#install">安装</a>
+          <a href="#pro">Pro</a>
+          <a href="#versions">版本区别</a>
+          <a href="#privacy">隐私</a>
+          <a href="https://github.com/Icy-Cat/x-viral-monitor">GitHub</a>
+        </div>
+        <div class="lang-switch" aria-label="Language">
+          <button type="button" data-lang="zh" aria-pressed="true">中</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+          <button type="button" data-lang="ja" aria-pressed="false">日</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -703,5 +744,227 @@
       </div>
     </div>
   </footer>
+  <script>
+    const siteI18n = {
+      zh: {
+        lang: 'zh-CN',
+        title: 'X Viral Monitor - X 爆款监测插件',
+        description: 'X Viral Monitor 在 X 时间线上显示推文流速、热榜、长图阅读、内容过滤和 Pro 流速过滤。支持 Chrome 扩展、Tampermonkey 油猴脚本和 iOS Safari UserScripts。',
+        nav: ['安装', 'Pro', '版本区别', '隐私', 'GitHub'],
+        kicker: 'X timeline intelligence',
+        heroTitle: 'X Viral Monitor',
+        heroLead: '在 X 时间线上实时识别推文流速、爆帖指数和当前页面热榜。Chrome 官方版支持 Pro 订阅；GitHub 社区版和油猴脚本保持开源可自建。',
+        heroCtas: ['安装 Chrome 扩展', '选择安装方式', '查看源码'],
+        installTitle: '三种安装方式',
+        installLead: '桌面 Chrome 用户推荐官方扩展。只需要基础徽章和排行榜，可以使用 Tampermonkey。iPhone / iPad 用户走 Safari UserScripts 移动版。',
+        installCards: [
+          ['Recommended', 'Chrome / Edge 扩展', '完整功能入口：流速徽章、热榜、内容过滤、长图阅读、Grok 回复辅助和 Pro 流速过滤。', ['打开 Chrome Web Store 页面', '点击添加到 Chrome', '在 X 页面右上角打开插件设置'], '去应用商店安装'],
+          ['Free script', 'Tampermonkey 油猴脚本', '桌面精简版，适合只想要流速徽章和当前页面热榜的用户。', ['安装 Tampermonkey 或 Violentmonkey', '打开脚本 raw 地址', '在脚本管理器中确认安装'], '安装桌面脚本'],
+          ['iOS Safari', 'Safari UserScripts', '移动版脚本使用 DOM fallback，默认保留徽章，关闭浮动排行榜以适配小屏。', ['安装 Userscripts App', '在 Safari 扩展设置中启用', '导入移动版脚本'], '安装移动脚本'],
+        ],
+        proTitle: 'Pro 订阅',
+        proLead: 'Pro 面向 Chrome Web Store 官方版，当前解锁流速过滤：按 views/min 和总浏览量隐藏低流速推文，并分别控制 Home、Lists、Profile、Tweet detail 范围。',
+        priceMainTitle: '按现有价格购买',
+        priceMainText: '购买后会获得 license key，在 Chrome 扩展的 Pro 页面激活。价格和结账状态以支付页显示为准。',
+        priceMonthly: ['月度订阅', '适合短期试用或阶段性使用。', '购买月度'],
+        priceAnnual: ['年度订阅，约省 17%', '适合长期监控 X 时间线的用户。', '购买年度'],
+        freeTitle: '免费功能不会被拿走',
+        freeText1: '流速徽章、当前页面热榜、书签数显示、图片查看增强、长图阅读、内容过滤、Markdown 复制、感谢星图和 Grok 回复辅助仍是免费能力。',
+        freeText2: 'Pro license 只用于官方 Chrome 扩展内的高级体验。客户端源码开放，付费价值来自官方构建、自动更新、license 服务、支持和持续维护。',
+        versionsTitle: '官方版 vs GitHub 社区版',
+        versionsLead: '同一套源码按 MIT 协议开放。Chrome Web Store 版本是官方发行版；GitHub 构建、自行加载、油猴脚本和 Safari UserScripts 属于社区/自建路径。',
+        matrix: [
+          ['安装和更新', 'Chrome Web Store 官方版提供一键安装和自动更新。GitHub 社区版需要自行下载 release、开发者模式加载或安装脚本。'],
+          ['Pro 激活', 'Pro 订阅面向官方 Chrome 扩展，支持 license 激活和状态校验。自建版本可审计和修改源码，但不承诺官方 license 服务支持。'],
+          ['支持范围', '官方版包含维护支持和持续发行。社区版按 MIT 协议 as-is 提供，适合开发者审计、二次开发和提交 PR。'],
+          ['脚本版本', 'Tampermonkey 和 Safari UserScripts 是免费轻量路径，重点覆盖流速徽章和移动端可用性，不等同于完整 Chrome 扩展。'],
+        ],
+        featureTitle: '核心能力',
+        features: [
+          ['流速徽章', '每条推文旁显示 views/hour，快速判断内容是否正在起量。'],
+          ['当前页面热榜', '浮动面板按流速排序当前可见推文，支持点击回跳。'],
+          ['长图阅读', 'X 灯箱内支持滚轮缩放、拖拽平移和长图纵向阅读。'],
+          ['内容过滤', '本地规则过滤 spam、色情和电报漏斗，规则可远程更新。'],
+        ],
+        privacyTitle: '隐私边界',
+        privacyLead: '扩展从你正在访问的 x.com / pro.x.com 页面和 X 自身响应中读取数据。功能计算在浏览器本地完成，不加入统计 SDK，不放追踪像素。',
+        footer: 'MIT Licensed. Built for X power users.',
+      },
+      en: {
+        lang: 'en',
+        title: 'X Viral Monitor - X growth velocity extension',
+        description: 'X Viral Monitor adds velocity badges, hot-page rankings, long-image reading, content filtering, and Pro velocity filtering to X. Install it as a Chrome extension, Tampermonkey userscript, or iOS Safari UserScripts build.',
+        nav: ['Install', 'Pro', 'Versions', 'Privacy', 'GitHub'],
+        kicker: 'X timeline intelligence',
+        heroTitle: 'X Viral Monitor',
+        heroLead: 'Spot tweet velocity, viral score, and page-level hot posts directly on X. The official Chrome build supports Pro subscriptions; GitHub and userscript builds stay open-source and self-buildable.',
+        heroCtas: ['Install Chrome extension', 'Choose install path', 'View source'],
+        installTitle: 'Three ways to install',
+        installLead: 'Use the official extension on desktop Chrome. Use Tampermonkey if you only need badges and the leaderboard. Use Safari UserScripts on iPhone or iPad.',
+        installCards: [
+          ['Recommended', 'Chrome / Edge extension', 'The full experience: velocity badges, hot list, content filter, long-image reader, Grok reply helper, and Pro velocity filtering.', ['Open the Chrome Web Store listing', 'Click Add to Chrome', 'Open the extension settings from X'], 'Install from Web Store'],
+          ['Free script', 'Tampermonkey userscript', 'A lightweight desktop build for users who only need velocity badges and the current-page leaderboard.', ['Install Tampermonkey or Violentmonkey', 'Open the raw script URL', 'Confirm installation in the script manager'], 'Install desktop script'],
+          ['iOS Safari', 'Safari UserScripts', 'The mobile build uses DOM fallback, keeps badges on, and disables the floating leaderboard by default for small screens.', ['Install the Userscripts App', 'Enable it in Safari extension settings', 'Import the mobile script'], 'Install mobile script'],
+        ],
+        proTitle: 'Pro subscription',
+        proLead: 'Pro is for the official Chrome Web Store build. It currently unlocks velocity filtering: hide low-velocity tweets by views/min and total views, scoped separately for Home, Lists, Profiles, and Tweet detail pages.',
+        priceMainTitle: 'Current pricing',
+        priceMainText: 'After purchase, activate your license key in the Chrome extension Pro tab. Final price and checkout status follow the payment page.',
+        priceMonthly: ['Monthly subscription', 'Good for short trials or temporary monitoring.', 'Buy monthly'],
+        priceAnnual: ['Annual subscription, about 17% off', 'Best for long-running X timeline monitoring.', 'Buy annual'],
+        freeTitle: 'Free features stay free',
+        freeText1: 'Velocity badges, current-page hot list, bookmark counts, image viewer upgrades, long-image reading, content filtering, Markdown copy, Thank-You Star Chart, and Grok reply drafts remain free.',
+        freeText2: 'The Pro license unlocks premium behavior in the official Chrome extension. The client source is open; paid value comes from the official build, auto-updates, license service, support, and ongoing maintenance.',
+        versionsTitle: 'Official build vs GitHub community build',
+        versionsLead: 'The same codebase is MIT licensed. Chrome Web Store is the official distribution; GitHub builds, manual installs, userscripts, and Safari UserScripts are community or self-built paths.',
+        matrix: [
+          ['Install and updates', 'The Chrome Web Store build has one-click install and automatic updates. GitHub/community builds require downloading releases, loading unpacked builds, or installing scripts yourself.'],
+          ['Pro activation', 'Pro subscriptions target the official Chrome extension with license activation and status validation. Self-built versions can be audited and modified, but official license-service support is not promised.'],
+          ['Support scope', 'The official build includes maintainer support and ongoing releases. Community builds are provided as-is under MIT, suitable for auditing, forks, and PRs.'],
+          ['Script builds', 'Tampermonkey and Safari UserScripts are free lightweight paths focused on velocity badges and mobile availability, not the full Chrome extension.'],
+        ],
+        featureTitle: 'Core features',
+        features: [
+          ['Velocity badges', 'Show views/hour beside each tweet to see whether a post is gaining speed.'],
+          ['Page hot list', 'Sort visible tweets by velocity in a floating panel and jump back to the source post.'],
+          ['Long-image reading', 'Zoom, pan, and read long screenshots vertically inside the native X lightbox.'],
+          ['Content filtering', 'Local rules hide spam, adult funnels, and Telegram bait; rules can update remotely.'],
+        ],
+        privacyTitle: 'Privacy boundary',
+        privacyLead: 'The extension reads data from x.com / pro.x.com pages you visit and X responses already loaded by your browser. Processing happens locally, with no analytics SDK and no tracking pixels.',
+        footer: 'MIT Licensed. Built for X power users.',
+      },
+      ja: {
+        lang: 'ja',
+        title: 'X Viral Monitor - X 投稿流速モニター',
+        description: 'X Viral Monitor は X のタイムラインに流速バッジ、注目投稿リスト、長尺画像閲覧、コンテンツフィルター、Pro 流速フィルターを追加します。Chrome 拡張、Tampermonkey、iOS Safari UserScripts に対応。',
+        nav: ['インストール', 'Pro', '版の違い', 'プライバシー', 'GitHub'],
+        kicker: 'X timeline intelligence',
+        heroTitle: 'X Viral Monitor',
+        heroLead: 'X のタイムライン上で投稿の流速、バズ指数、ページ内の注目投稿を確認できます。公式 Chrome 版は Pro サブスクに対応し、GitHub 版と userscript 版はオープンソースで自分でビルドできます。',
+        heroCtas: ['Chrome 拡張を入れる', 'インストール方法を見る', 'ソースを見る'],
+        installTitle: '3 つのインストール方法',
+        installLead: 'デスクトップ Chrome では公式拡張がおすすめです。バッジとランキングだけなら Tampermonkey、iPhone / iPad では Safari UserScripts 版を使えます。',
+        installCards: [
+          ['Recommended', 'Chrome / Edge 拡張', '流速バッジ、注目リスト、コンテンツフィルター、長尺画像閲覧、Grok 返信補助、Pro 流速フィルターを含む完全版です。', ['Chrome Web Store ページを開く', 'Chrome に追加をクリック', 'X ページ右上から設定を開く'], 'ストアからインストール'],
+          ['Free script', 'Tampermonkey userscript', '流速バッジと現在ページのランキングだけを使いたい人向けの軽量デスクトップ版です。', ['Tampermonkey または Violentmonkey を入れる', 'raw スクリプト URL を開く', 'スクリプト管理画面で確認'], 'デスクトップ版を入れる'],
+          ['iOS Safari', 'Safari UserScripts', 'モバイル版は DOM fallback を使い、小画面向けにバッジを残してフローティングランキングを既定でオフにします。', ['Userscripts App を入れる', 'Safari 拡張設定で有効化', 'モバイル版スクリプトを読み込む'], 'モバイル版を入れる'],
+        ],
+        proTitle: 'Pro サブスクリプション',
+        proLead: 'Pro は公式 Chrome Web Store 版向けです。現在は views/min と総表示数で低流速投稿を隠す流速フィルターを解放し、Home、Lists、Profiles、Tweet detail ごとに適用範囲を切り替えられます。',
+        priceMainTitle: '現在の価格',
+        priceMainText: '購入後、Chrome 拡張の Pro タブで license key を有効化します。最終価格と決済状態は決済ページの表示に従います。',
+        priceMonthly: ['月額サブスク', '短期間の試用や一時的な監視に向いています。', '月額で購入'],
+        priceAnnual: ['年額サブスク、約 17% お得', '長期的に X タイムラインを監視する人向けです。', '年額で購入'],
+        freeTitle: '無料機能はそのまま',
+        freeText1: '流速バッジ、ページ内注目リスト、ブックマーク数表示、画像ビューア強化、長尺画像閲覧、コンテンツフィルター、Markdown コピー、Thank-You Star Chart、Grok 返信補助は無料機能です。',
+        freeText2: 'Pro license は公式 Chrome 拡張内の高度な体験を解放します。クライアントソースは公開され、課金価値は公式ビルド、自動更新、ライセンスサービス、サポート、継続保守にあります。',
+        versionsTitle: '公式版 vs GitHub コミュニティ版',
+        versionsLead: '同じコードベースを MIT ライセンスで公開しています。Chrome Web Store は公式配布、GitHub ビルド、手動読み込み、userscript、Safari UserScripts はコミュニティ / 自己ビルドの経路です。',
+        matrix: [
+          ['インストールと更新', 'Chrome Web Store 公式版はワンクリックインストールと自動更新に対応します。GitHub 版は release のダウンロード、展開版読み込み、またはスクリプト導入が必要です。'],
+          ['Pro 有効化', 'Pro サブスクは公式 Chrome 拡張向けで、license の有効化と状態確認に対応します。自己ビルド版は監査と改変ができますが、公式 license サービスのサポートは保証しません。'],
+          ['サポート範囲', '公式版には保守サポートと継続リリースが含まれます。コミュニティ版は MIT に基づき as-is で提供され、監査、fork、PR に向いています。'],
+          ['スクリプト版', 'Tampermonkey と Safari UserScripts は無料の軽量経路で、流速バッジとモバイル利用性に重点を置き、完全な Chrome 拡張とは異なります。'],
+        ],
+        featureTitle: '主な機能',
+        features: [
+          ['流速バッジ', '各投稿の横に views/hour を表示し、伸びている投稿をすぐ判別できます。'],
+          ['ページ内注目リスト', '現在見えている投稿を流速順に並べ、元投稿へすぐ戻れます。'],
+          ['長尺画像閲覧', 'X のライトボックス内でズーム、パン、長いスクリーンショットの縦読みができます。'],
+          ['コンテンツフィルター', 'ローカルルールで spam、成人向け誘導、Telegram 誘導を隠し、ルールはリモート更新できます。'],
+        ],
+        privacyTitle: 'プライバシー境界',
+        privacyLead: '拡張は閲覧中の x.com / pro.x.com ページと、ブラウザがすでに読み込んだ X のレスポンスからデータを読みます。処理はローカルで行われ、分析 SDK やトラッキングピクセルは入れていません。',
+        footer: 'MIT Licensed. Built for X power users.',
+      },
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    function text(selector, value) {
+      const el = $(selector);
+      if (el) el.textContent = value;
+    }
+    function list(selector, values) {
+      $$(selector).forEach((el, i) => {
+        if (values[i] != null) el.textContent = values[i];
+      });
+    }
+    function applySiteLanguage(lang) {
+      const t = siteI18n[lang] || siteI18n.zh;
+      document.documentElement.lang = t.lang;
+      document.title = t.title;
+      $('meta[name="description"]')?.setAttribute('content', t.description);
+      $('meta[property="og:title"]')?.setAttribute('content', t.heroTitle);
+      $('meta[property="og:description"]')?.setAttribute('content', t.description);
+      list('.nav-links a', t.nav);
+      text('.hero .kicker', t.kicker);
+      text('.hero h1', t.heroTitle);
+      text('.hero .lead', t.heroLead);
+      list('.hero .cta-row .btn', t.heroCtas);
+      text('#install h2', t.installTitle);
+      text('#install .section-lead', t.installLead);
+      $$('.install-card').forEach((card, i) => {
+        const item = t.installCards[i];
+        if (!item) return;
+        card.querySelector('.tag').textContent = item[0];
+        card.querySelector('strong').textContent = item[1];
+        card.querySelector('p').textContent = item[2];
+        card.querySelectorAll('.steps li').forEach((li, idx) => { li.textContent = item[3][idx]; });
+        card.querySelector('.btn').textContent = item[4];
+      });
+      text('#pro h2', t.proTitle);
+      text('#pro .section-lead', t.proLead);
+      const priceCards = $$('#pro .price-card');
+      priceCards[0].querySelector('strong').textContent = t.priceMainTitle;
+      priceCards[0].querySelector('p').textContent = t.priceMainText;
+      const prices = $$('#pro .price');
+      prices[0].querySelector('span').textContent = t.priceMonthly[0];
+      prices[0].querySelector('p').textContent = t.priceMonthly[1];
+      prices[0].querySelector('.btn').textContent = t.priceMonthly[2];
+      prices[1].querySelector('span').textContent = t.priceAnnual[0];
+      prices[1].querySelector('p').textContent = t.priceAnnual[1];
+      prices[1].querySelector('.btn').textContent = t.priceAnnual[2];
+      priceCards[1].querySelector('strong').textContent = t.freeTitle;
+      priceCards[1].querySelectorAll('p')[0].textContent = t.freeText1;
+      priceCards[1].querySelectorAll('p')[1].textContent = t.freeText2;
+      text('#versions h2', t.versionsTitle);
+      text('#versions .section-lead', t.versionsLead);
+      $$('#versions .matrix tr').forEach((row, i) => {
+        row.querySelector('th').textContent = t.matrix[i][0];
+        row.querySelector('td').textContent = t.matrix[i][1];
+      });
+      const featureSection = $('section:nth-of-type(4)');
+      featureSection.querySelector('h2').textContent = t.featureTitle;
+      featureSection.querySelectorAll('.feature-card').forEach((card, i) => {
+        card.querySelector('strong').textContent = t.features[i][0];
+        card.querySelector('p').textContent = t.features[i][1];
+      });
+      text('#privacy h2', t.privacyTitle);
+      text('#privacy .section-lead', t.privacyLead);
+      text('footer .wrap > span', t.footer);
+      $$('.lang-switch button').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.lang === lang));
+      });
+      try { localStorage.setItem('xvm-site-lang', lang); } catch (_) {}
+    }
+
+    function detectSiteLanguage() {
+      try {
+        const saved = localStorage.getItem('xvm-site-lang');
+        if (siteI18n[saved]) return saved;
+      } catch (_) {}
+      const lang = (navigator.language || '').toLowerCase();
+      if (lang.startsWith('ja')) return 'ja';
+      if (lang.startsWith('en')) return 'en';
+      return 'zh';
+    }
+
+    $$('.lang-switch button').forEach((btn) => {
+      btn.addEventListener('click', () => applySiteLanguage(btn.dataset.lang));
+    });
+    applySiteLanguage(detectSiteLanguage());
+  </script>
 </body>
 </html>

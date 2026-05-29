@@ -1,8 +1,11 @@
 // ==UserScript==
 // @name         X Viral Monitor Mobile Badge
-// @namespace    https://github.com/x-viral-monitor
+// @namespace    https://github.com/Icy-Cat/x-viral-monitor
 // @version      0.1.15
 // @description  Mobile Safari/Userscripts badge build: DOM fallback badges, no floating leaderboard by default.
+// @author       IcyCat
+// @homepageURL  https://github.com/Icy-Cat/x-viral-monitor
+// @supportURL   https://github.com/Icy-Cat/x-viral-monitor/issues
 // @match        https://x.com/*
 // @match        https://pro.x.com/*
 // @match        https://mobile.x.com/*

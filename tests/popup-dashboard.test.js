@@ -94,7 +94,7 @@ describe('#45 popup tabs structure (mock A)', () => {
                       'lb-reset-pos', 'lb-reset-msg',
                       'grok-template-select', 'grok-prompt', 'grok-prompt-save',
                       'grok-article-template-select', 'grok-article-prompt',
-                      'rate-filter-section', 'xvm-pro-section']) {
+                      'language-select', 'rate-filter-section', 'xvm-pro-section']) {
       expect(new RegExp(`id="${id}"`).test(html), `popup.html must keep id="${id}"`).toBe(true);
     }
   });
@@ -103,7 +103,7 @@ describe('#45 popup tabs structure (mock A)', () => {
     expect(/<select\b|<option\b/.test(html)).toBe(false);
     expect(/document\.createElement\(\s*['"]option['"]\s*\)/.test(popupJs)).toBe(false);
     expect(/<select\b|<option\b/.test(userScript)).toBe(false);
-    expect((html.match(/class="xvm-select"/g) || []).length).toBe(3);
+    expect((html.match(/class="xvm-select"/g) || []).length).toBe(4);
   });
 
   it('loads scripts in order: tier-logic → popup-pro → popup filters → popup.js → popup-dashboard', () => {
@@ -247,9 +247,10 @@ describe('#45 popup-pro.js Pro-tab rendering', () => {
 });
 
 describe('#45 i18n keys (mock A + dual theme)', () => {
-  it('en + zh_CN locales declare all new keys', () => {
+  it('en + zh_CN + ja locales declare all new keys', () => {
     const en = JSON.parse(readFileSync(resolve(repo, '_locales/en/messages.json'), 'utf8'));
     const zh = JSON.parse(readFileSync(resolve(repo, '_locales/zh_CN/messages.json'), 'utf8'));
+    const ja = JSON.parse(readFileSync(resolve(repo, '_locales/ja/messages.json'), 'utf8'));
     const required = [
       'tabPro', 'tabFilter', 'tabLeaderboard', 'tabAbout',
       'rfSubShort', 'rfSubLong',
@@ -258,11 +259,42 @@ describe('#45 i18n keys (mock A + dual theme)', () => {
       'chipTrialDays', 'chipTrialOne',
       'themeLabel', 'themeSwitchToDark', 'themeSwitchToLight',
       'advAppearanceTitle',
+      'languageLabel', 'languageHint', 'languageAuto',
+      'languageZh', 'languageEn', 'languageJa',
+      'grokShortTemplateLabel', 'grokArticleTemplateLabel', 'grokArticleTemplateHint',
+      'grokDefaultTemplateName', 'grokCustomTemplateName',
+      'grokArticleFallbackName', 'grokArticleCustomTemplateName',
     ];
     for (const k of required) {
       expect(en[k]?.message, `en must declare ${k}`).toBeTruthy();
       expect(zh[k]?.message, `zh_CN must declare ${k}`).toBeTruthy();
+      expect(ja[k]?.message, `ja must declare ${k}`).toBeTruthy();
     }
+  });
+
+  it('keeps custom Grok prompt edits when switching languages', () => {
+    expect(/function\s+isUnmodifiedBundledGrokTemplateSet/.test(popupJs)).toBe(true);
+    expect(/isUnmodifiedBundledGrokTemplateSet\(grokTemplatesState,\s*['"]promptTemplates['"]\)/.test(popupJs)).toBe(true);
+    expect(/isUnmodifiedBundledGrokTemplateSet\(grokArticleTemplatesState,\s*['"]articlePromptTemplates['"]\)/.test(popupJs)).toBe(true);
+    expect(/usesOnlyBundledGrokTemplates/.test(popupJs)).toBe(false);
+  });
+
+  it('does not leave hard-coded Chinese fallback names in popup Grok templates', () => {
+    expect(/active\.name[\s\S]*\|\|\s*['"]模板['"]/.test(popupJs)).toBe(false);
+    expect(/name:\s*`模板\s+\$\{grokTemplatesState\.length\s*\+\s*1\}`/.test(popupJs)).toBe(false);
+    expect(/tr\(['"]grokCustomTemplateName['"]/.test(popupJs)).toBe(true);
+  });
+
+  it('keeps the original Chinese Grok default prompt templates', () => {
+    expect(popupJs).toContain("id: 'short-cn', name: '中文短评'");
+    expect(popupJs).toContain("id: 'tieba-laoge', name: '贴吧老哥'");
+    expect(popupJs).toContain('为我生成针对该推文的10条评论,每条评论只包含可直接发布的评论正文，用代码块包裹。');
+    expect(popupJs).toContain('用贴吧老哥的语气为该推文生成10条评论。整体阴阳怪气，但不带脏字、不人身攻击；保持口语感，不要装文艺、不要写得像新闻评论；每条评论控制在 30 字以内，简短精悍。');
+    expect(popupJs).toContain("id: 'article-deep', name: '深度回应'");
+    expect(bridgeJs).toContain("id: 'short-cn', name: '中文短评'");
+    expect(bridgeJs).toContain("id: 'tieba-laoge', name: '贴吧老哥'");
+    expect(bridgeJs).toContain('用贴吧老哥的语气为该推文生成10条评论。整体阴阳怪气，但不带脏字、不人身攻击；保持口语感，不要装文艺、不要写得像新闻评论；每条评论控制在 30 字以内，简短精悍。');
+    expect(bridgeJs).toContain('为我生成针对该推文的10条评论, 每条评论只包含可直接发布的评论正文，用代码块包裹。');
   });
 });
 
@@ -374,15 +406,18 @@ describe('#45 i18n lock-step (content.js i18n() ↔ bridge CONTENT_MESSAGE_KEYS 
     expect(missingZh, `_locales/zh_CN missing keys: ${missingZh.join(', ')}`).toEqual([]);
   });
 
-  it('every popup.html data-i18n attribute key is declared in en + zh_CN', () => {
+  it('every popup.html data-i18n attribute key is declared in en + zh_CN + ja', () => {
     const html = readFileSync(resolve(repo, 'popup.html'), 'utf8');
     const en = JSON.parse(readFileSync(resolve(repo, '_locales/en/messages.json'), 'utf8'));
     const zh = JSON.parse(readFileSync(resolve(repo, '_locales/zh_CN/messages.json'), 'utf8'));
+    const ja = JSON.parse(readFileSync(resolve(repo, '_locales/ja/messages.json'), 'utf8'));
     const used = [...new Set([...html.matchAll(/data-i18n="([A-Za-z0-9_]+)"/g)].map((m) => m[1]))];
     const missingEn = used.filter((k) => !en[k]?.message);
     const missingZh = used.filter((k) => !zh[k]?.message);
+    const missingJa = used.filter((k) => !ja[k]?.message);
     expect(missingEn, `popup.html references data-i18n keys missing from _locales/en: ${missingEn.join(', ')}`).toEqual([]);
     expect(missingZh, `popup.html references data-i18n keys missing from _locales/zh_CN: ${missingZh.join(', ')}`).toEqual([]);
+    expect(missingJa, `popup.html references data-i18n keys missing from _locales/ja: ${missingJa.join(', ')}`).toEqual([]);
   });
 });
 
