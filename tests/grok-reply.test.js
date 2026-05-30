@@ -7,10 +7,16 @@ import vm from 'node:vm';
 // sandbox with mocked browser globals to test the pure helpers.
 const src = readFileSync(new URL('../lib/grok-reply.js', import.meta.url), 'utf8');
 
-function loadGrok() {
+function loadGrok(opts = {}) {
+  const previousGrok = opts.capturedTxId ? { __capturedTxId: opts.capturedTxId } : undefined;
   const win = {
-    __xvmNet: null,
-    __xvmXct: null,
+    __xvmNet: opts.fetch ? {
+      originalFetch: opts.fetch,
+      getBearer: () => 'Bearer test-token',
+      onRequest() {},
+    } : null,
+    __xvmXct: opts.xct || null,
+    __xvmGrok: previousGrok,
     addEventListener() {},
     postMessage() {},
   };
@@ -146,5 +152,42 @@ describe('extractFinalText', () => {
   it('ignores non-JSON lines', () => {
     const stream = `not json\n${JSON.stringify({ result: { sender: 'ASSISTANT', messageTag: 'final', message: 'ok' } })}\nalso not json`;
     expect(api.extractFinalText(stream)).toBe('ok');
+  });
+});
+
+describe('generate', () => {
+  function ndjsonOf(message) {
+    return JSON.stringify({ result: { sender: 'ASSISTANT', messageTag: 'final', message } });
+  }
+
+  it('prefers a captured tx-id before trying self-generation', async () => {
+    const calls = [];
+    const apiWithCapture = loadGrok({
+      capturedTxId: 'captured-valid-tx-id',
+      fetch: async (url, init) => {
+        calls.push({ url, init });
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => ndjsonOf('```\n第一条\n```\n```\n第二条\n```'),
+        };
+      },
+      xct: {
+        generateTxId: async () => {
+          throw new Error('self-generation should not be used when capture exists');
+        },
+        reset() {},
+      },
+    });
+
+    await expect(apiWithCapture.generate({
+      tweetText: 'tweet',
+      promptTemplate: '[推文内容]',
+      temporaryChat: true,
+    })).resolves.toEqual(['第一条', '第二条']);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].init.headers['x-client-transaction-id']).toBe('captured-valid-tx-id');
   });
 });
