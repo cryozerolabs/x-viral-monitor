@@ -141,15 +141,27 @@ describe('#45 step 3 — popup pro UI', () => {
     }
   });
 
-  it('price copy escapes literal dollar signs for chrome.i18n', () => {
+  it('plugin Pro purchase UI routes to the website without hard-coded prices', () => {
     const locales = ['en', 'zh_CN', 'ja'];
-    const priceKeys = [
-      'contentLbHotMonthly', 'contentLbHotAnnual',
+    const contentJs = readFileSync(resolve(repo, 'content.js'), 'utf8');
+    const uiSources = [
+      ['popup-pro.js', js],
+      ['content.js', contentJs],
     ];
+
+    for (const [name, source] of uiSources) {
+      expect(source, `${name} must not link directly to Creem checkout`).not.toMatch(/creem\.io\/payment/);
+      expect(source, `${name} must not expose checkout product ids`).not.toMatch(/prod_7f7t9EHK3RJlOK37DWr7J|prod_69yTiXGXb04DKm46DNVbN9/);
+      expect(source, `${name} should route Pro education to the product website`).toMatch(/https:\/\/icy-cat\.github\.io\/x-viral-monitor\/#pro/);
+      expect(source, `${name} must not hard-code old Pro prices`).not.toMatch(/\$+\s*(?:2\.9|29)\b/);
+    }
+
     for (const locale of locales) {
       const messages = JSON.parse(readFileSync(resolve(repo, `_locales/${locale}/messages.json`), 'utf8'));
-      for (const key of priceKeys) {
-        expect(messages[key]?.message, `${locale}/${key} must include escaped literal $`).toMatch(/\$\$(?:2\.9|29)/);
+      const serialized = JSON.stringify(messages);
+      expect(serialized, `${locale} locale must not hard-code old Pro prices`).not.toMatch(/\$+\s*(?:2\.9|29)\b/);
+      for (const key of ['contentLbHotDetails', 'contentLbHotOpenSite']) {
+        expect(messages[key]?.message, `${locale}/${key} must exist`).toBeTruthy();
       }
     }
   });

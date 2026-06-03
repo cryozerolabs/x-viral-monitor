@@ -365,10 +365,27 @@ describe('#69/#72 user self-test polish', () => {
   it('renders the leaderboard Hot only switch with shared state sync hooks', () => {
     expect(contentJs).toMatch(/className\s*=\s*['"]xvm-lb-controls['"]/);
     expect(contentJs).toMatch(/xvm-lb-pro-badge/);
+    expect(contentJs).toMatch(/xvm-lb-settings/);
+    expect(contentJs).toMatch(/xvm-lb-close/);
+    expect(contentJs).toMatch(/lucide-settings/);
+    expect(contentJs).toMatch(/M9\.671 4\.136a2\.34/);
+    expect(contentJs).toMatch(/xvm-lb-settings-panel/);
+    expect(contentJs).toMatch(/xvm-lb-settings-hot-row/);
+    expect(contentJs).toMatch(/xvm-lb-settings-cols/);
+    expect(contentJs).toMatch(/function\s+toggleLeaderboardSettingsPanel/);
+    expect(contentJs).toMatch(/function\s+positionLeaderboardSettingsPanel/);
+    expect(contentJs).toMatch(/function\s+saveLeaderboardSettingsPatch/);
     expect(contentJs).toMatch(/aria-disabled/);
     expect(contentJs).toMatch(/contentLbHotOnly/);
+    expect(contentJs).toMatch(/contentLeaderboardSettings/);
+    expect(contentJs).toMatch(/contentLeaderboardClose/);
     expect(contentJs).toMatch(/XVM_RATE_FILTER_REQUEST/);
     expect(contentJs).toMatch(/XVM_RATE_SETTINGS_UPDATE/);
+    expect(contentJs).toMatch(/function\s+getLeaderboardHotToggle/);
+    expect(contentJs).toMatch(/XVM_LEADERBOARD_SETTINGS_SAVE/);
+    expect(contentJs).toMatch(/XVM_LEADERBOARD_DISABLE/);
+    expect(contentJs).not.toMatch(/XVM_OPEN_POPUP_SETTINGS/);
+    expect(contentJs).not.toMatch(/controls\.append\(hot\)/);
     expect(contentJs).not.toMatch(/XVM_LIST_MEMBER_FILTER_SET_ENABLED/);
     expect(contentJs).not.toMatch(/isReadyListMemberFilter/);
     expect(contentJs).not.toMatch(/contentLbListDisabledSub/);
@@ -384,8 +401,25 @@ describe('#69/#72 user self-test polish', () => {
     expect(bridgeJs).not.toMatch(/XVM_LIST_MEMBER_FILTER_SET_ENABLED/);
     expect(bridgeJs).not.toMatch(/xvm-lb-list-member/);
     expect(bridgeJs).not.toMatch(/xvm_list_member_filter_v1/);
+    expect(bridgeJs).not.toMatch(/XVM_OPEN_POPUP_SETTINGS/);
+    expect(bridgeJs).not.toMatch(/chrome\.runtime\.getURL\(`popup\.html#\$\{tab\}`\)/);
+    expect(bridgeJs).toMatch(/type\s*===\s*['"]XVM_LEADERBOARD_DISABLE['"]/);
+    expect(bridgeJs).toMatch(/chrome\.storage\.sync\.set\(\{\s*featureVelocityLeaderboard:\s*false\s*\}/);
+    expect(bridgeJs).toMatch(/type\s*===\s*['"]XVM_LEADERBOARD_SETTINGS_SAVE['"]/);
+    expect(bridgeJs).toMatch(/patch\.leaderboardCount\s*=\s*normalizeLeaderboardCount/);
+    expect(bridgeJs).toMatch(/patch\.leaderboardColumns\s*=\s*normalizeLeaderboardColumns/);
     expect(/\.xvm-lb-hot\[data-tier="free"\]\s+\.xvm-lb-pro-badge\s*\{[\s\S]*?display:\s*inline-flex/.test(stylesCss)).toBe(true);
     expect(/\.xvm-lb-hot\[aria-disabled="true"\]\s*\{[\s\S]*?cursor:\s*not-allowed/.test(stylesCss)).toBe(true);
+    expect(/\.xvm-lb-settings-hot-row\s+\.xvm-lb-hot\s*\{[\s\S]*?margin-left:\s*auto/.test(stylesCss)).toBe(true);
+    expect(/\.xvm-lb-action\s*\{[\s\S]*?width:\s*22px/.test(stylesCss)).toBe(true);
+    expect(/\.xvm-lb-action\s+svg\s*\{[\s\S]*?width:\s*16px/.test(stylesCss)).toBe(true);
+    expect(/\.xvm-lb-settings-panel\s*\{[\s\S]*?position:\s*fixed/.test(stylesCss)).toBe(true);
+    expect(/\.xvm-lb-settings-panel\[data-theme="dark"\]/.test(stylesCss)).toBe(true);
+  });
+
+  it('prevents stale leaderboard RAF renders after the feature is disabled', () => {
+    expect(contentJs).toMatch(/function\s+hideLeaderboard\(\)\s*\{[\s\S]*?cancelAnimationFrame\(leaderboardRaf\)/);
+    expect(contentJs).toMatch(/leaderboardRaf\s*=\s*requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*?if\s*\(!leaderboardEnabled\)\s*\{[\s\S]*?hideLeaderboard\(\)/);
   });
 
   it('dark leaderboard overrides nested text colors, not only the row color', () => {
@@ -401,6 +435,12 @@ describe('#69/#72 user self-test polish', () => {
     expect(contentJs).toMatch(/list\.style\.height\s*=\s*px/);
     expect(contentJs).toMatch(/list\.style\.minHeight\s*=\s*px/);
     expect(contentJs).toMatch(/list\.style\.maxHeight\s*=\s*px/);
+  });
+
+  it('supports opening popup.html#leaderboard directly from the floating settings button', () => {
+    expect(dashJs).toMatch(/function\s+readHashTab\(\)/);
+    expect(dashJs).toMatch(/const\s+hashTab\s*=\s*readHashTab\(\)/);
+    expect(dashJs).toMatch(/window\.addEventListener\(['"]hashchange['"]/);
   });
 });
 

@@ -52,6 +52,15 @@
     }
   }
 
+  function readHashTab() {
+    try {
+      const hash = String(location.hash || '').replace(/^#/, '');
+      return isValidTab(hash) ? hash : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function setTab(name, opts = {}) {
     if (!TABS.includes(name)) name = 'filter';
     const persist = opts.persist !== false;
@@ -67,6 +76,12 @@
   }
 
   function loadInitialTab() {
+    const hashTab = readHashTab();
+    if (hashTab) {
+      setTab(hashTab, { persist: true });
+      markTabReady();
+      return;
+    }
     const localTab = readLocalTab();
     if (localTab) {
       setTab(localTab, { persist: false });
@@ -98,6 +113,10 @@
   function wireTabButtons() {
     document.querySelectorAll('[role="tab"][data-tab]').forEach((btn) => {
       btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+    window.addEventListener('hashchange', () => {
+      const hashTab = readHashTab();
+      if (hashTab) setTab(hashTab);
     });
   }
 

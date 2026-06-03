@@ -128,10 +128,14 @@ html[data-xvm-badge-style="inline-classic"] .xvm-badge--red { color: #f44336; ba
 }
 .xvm-lb-title {
   flex: 1;
+  min-width: 0;
   font-size: 11px;
   font-weight: 700;
   color: #6e5b4d;
   letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .xvm-lb-back {
   display: inline-flex;
@@ -1625,7 +1629,34 @@ img.xvm-liv-img {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+.xvm-lb-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #8f3d17;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, transform 0.12s;
+}
+.xvm-lb-action:hover {
+  background: rgba(191, 90, 42, 0.14);
+  color: #6f2f11;
+}
+.xvm-lb-action:active {
+  transform: translateY(1px);
+}
+.xvm-lb-action svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 .xvm-lb-hot {
   flex: 0 0 auto;
@@ -1687,7 +1718,17 @@ img.xvm-liv-img {
   cursor: not-allowed;
   opacity: 0.68;
 }
+.xvm-lb-settings-hot-row .xvm-lb-hot {
+  margin-left: auto;
+}
 .xvm-lb[data-theme="dark"] .xvm-lb-hot-label { color: #cbd5e1; }
+.xvm-lb[data-theme="dark"] .xvm-lb-action {
+  color: #cbd5e1;
+}
+.xvm-lb[data-theme="dark"] .xvm-lb-action:hover {
+  background: rgba(6, 182, 212, 0.16);
+  color: #f8fafc;
+}
 .xvm-lb[data-theme="dark"] .xvm-lb-pro-badge {
   background: rgba(6, 182, 212, 0.16);
   color: #67e8f9;
@@ -1698,6 +1739,174 @@ img.xvm-liv-img {
   box-shadow: 0 0 0 2px #06b6d4;
 }
 .xvm-lb[data-theme="dark"] .xvm-lb-hot[data-tier="free"] .xvm-lb-hot-slider {
+  outline-color: rgba(148, 163, 184, 0.55);
+}
+
+.xvm-lb-settings-panel {
+  position: fixed;
+  width: 248px;
+  padding: 10px;
+  border: 1px solid rgba(86, 60, 34, 0.18);
+  border-radius: 12px;
+  background: #fffcf6;
+  color: #24180f;
+  box-shadow: 0 14px 32px rgba(36, 24, 15, 0.24), 0 2px 6px rgba(36, 24, 15, 0.08);
+  z-index: 2147483647;
+  font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+.xvm-lb-settings-panel[hidden] { display: none; }
+.xvm-lb-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.xvm-lb-settings-title {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6e5b4d;
+}
+.xvm-lb-settings-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #8f3d17;
+  cursor: pointer;
+}
+.xvm-lb-settings-close:hover {
+  background: rgba(191, 90, 42, 0.14);
+  color: #6f2f11;
+}
+.xvm-lb-settings-row,
+.xvm-lb-settings-toggle,
+.xvm-lb-settings-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.xvm-lb-settings-row {
+  margin-bottom: 10px;
+}
+.xvm-lb-settings-label,
+.xvm-lb-settings-toggle b,
+.xvm-lb-settings-section-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6e5b4d;
+}
+.xvm-lb-settings-count {
+  width: 64px;
+  padding: 6px 8px;
+  border: 1px solid rgba(86, 60, 34, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #24180f;
+  font: inherit;
+  font-size: 12px;
+}
+.xvm-lb-settings-toggle {
+  padding: 8px 0;
+  border-top: 1px solid rgba(86, 60, 34, 0.12);
+  border-bottom: 1px solid rgba(86, 60, 34, 0.12);
+}
+.xvm-lb-settings-toggle span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.xvm-lb-settings-toggle small,
+.xvm-lb-settings-hint {
+  color: #8b796d;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.xvm-lb-settings-toggle input,
+.xvm-lb-settings-col input {
+  accent-color: #bf5a2a;
+}
+.xvm-lb-settings-section {
+  margin-top: 10px;
+}
+.xvm-lb-settings-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+.xvm-lb-settings-col {
+  justify-content: flex-start;
+  font-size: 11.5px;
+  color: #4e3c31;
+  cursor: pointer;
+  user-select: none;
+}
+.xvm-lb-settings-col span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xvm-lb-settings-hint {
+  margin: 10px 0 0;
+}
+.xvm-lb-settings-panel[data-theme="dark"] {
+  background: #0f172a;
+  color: #f8fafc;
+  border-color: #334155;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.56), 0 2px 6px rgba(0, 0, 0, 0.32);
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-title,
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-label,
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-toggle b,
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-section-title {
+  color: #f8fafc;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-close {
+  color: #cbd5e1;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-close:hover {
+  background: rgba(6, 182, 212, 0.16);
+  color: #f8fafc;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-count {
+  background: #111827;
+  border-color: #334155;
+  color: #f8fafc;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-toggle {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-toggle small,
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-hint {
+  color: #94a3b8;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-col {
+  color: #cbd5e1;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-toggle input,
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-settings-col input {
+  accent-color: #06b6d4;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-pro-badge {
+  background: rgba(6, 182, 212, 0.16);
+  color: #67e8f9;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-hot-slider { background: #334155; }
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-hot-switch input:checked + .xvm-lb-hot-slider { background: #06b6d4; }
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-hot-switch input:focus-visible + .xvm-lb-hot-slider {
+  box-shadow: 0 0 0 2px #06b6d4;
+}
+.xvm-lb-settings-panel[data-theme="dark"] .xvm-lb-hot[data-tier="free"] .xvm-lb-hot-slider {
   outline-color: rgba(148, 163, 184, 0.55);
 }
 /* Mini upgrade bubble for free users (rendered below leaderboard head). */

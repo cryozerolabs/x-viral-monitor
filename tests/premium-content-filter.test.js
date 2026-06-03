@@ -14,6 +14,8 @@ const isolated = readFileSync(resolve(repo, 'src/premium/license/isolated.js'), 
 const filter = readFileSync(resolve(repo, 'src/premium/content-filter/filter.js'), 'utf8');
 const popupFilter = readFileSync(resolve(repo, 'src/premium/content-filter/popup-content-filter.js'), 'utf8');
 const rulesJson = JSON.parse(readFileSync(resolve(repo, 'src/premium/content-filter/rules.json'), 'utf8'));
+const bootstrapRulesJson = JSON.parse(readFileSync(resolve(repo, 'src/premium/content-filter/bootstrap-rules.json'), 'utf8'));
+const syncRulesScript = readFileSync(resolve(repo, 'scripts/sync-rules.mjs'), 'utf8');
 const popupHtml = readFileSync(resolve(repo, 'popup.html'), 'utf8');
 const rateFilter = readFileSync(resolve(repo, 'src/premium/rate-filter/filter.js'), 'utf8');
 const content = readFileSync(resolve(repo, 'content.js'), 'utf8');
@@ -228,6 +230,17 @@ describe('#123 XVM content filter v1', () => {
       expect(rule.id).toBeTruthy();
       expect(rule.value).toBeTruthy();
     }
+  });
+
+  it('bundled bootstrap rules stay small and high-confidence only', () => {
+    expect(syncRulesScript).toContain('bootstrap-rules.json');
+    expect(syncRulesScript).not.toContain("content-filter/rules.json'");
+    expect(bootstrapRulesJson.rules.length).toBeLessThan(rulesJson.rules.length);
+    for (const rule of bootstrapRulesJson.rules) {
+      expect(['high', 'block']).toContain(rule.severity);
+      expect(rule.type === 'domain' && rule.value === 't.me').toBe(false);
+    }
+    expect(bootstrapRulesJson.rules.some((rule) => rule.id === 'hard-telegram-group-funnel')).toBe(true);
   });
 
   it('content-filter classifies telegram funnel, media spam, and whitelist correctly', () => {
@@ -446,6 +459,92 @@ describe('#123 XVM content filter v1', () => {
     expect(api._debug.classify(resourceOk).hide).toBe(false);
   });
 
+  it('catches exchange support / rebate spam names and satellite contact bios', () => {
+    const api = loadDebug();
+    api.updateSettings({ enabled: true, level: 'standard', whitelistFollowing: false });
+
+    const namePositives = [
+      { id: 'exchange-1', name: '商务小窗 | 白安 | bitmart92', content: '爱马仕跟小龙虾联名有点东西' },
+      { id: 'exchange-2', name: '在线接待: bitmart92 🚀', content: '哈哈，这联名够绝' },
+      { id: 'exchange-3', name: '高返 苏禾 bitmart92 ✨', content: '这个联名脑洞可以有' },
+    ];
+
+    for (const p of namePositives) {
+      const hit = api._debug.classify({
+        id: p.id,
+        content: p.content,
+        urls: [],
+        author: { handle: `spam_exchange_${p.id}`, name: p.name, bio: '', location: '' },
+      });
+      expect(hit.hide).toBe(true);
+      expect(hit.matches.some((m) => m.id === 'spam-name-exchange-support-high')).toBe(true);
+    }
+
+    const bioPositives = [
+      '二手车行想做得稳，报价要清楚，过程要透明。 卫星1:（qqq-0001） 卫星2:（btc-demo） 卫星3:（demo888） （tg：demo_tg） 《（详细点🔗，其他也有做哦》',
+      '家政保洁想做得稳，报价要清楚，过程要透明。 卫星1:（demo-a） 卫星2:（demo-b） （tg：demo_tg） 《（详细点🔗，其他也有做哦》',
+      '健身私教基本功要打牢。 卫星1:（demo777） 卫星2:（demo28） 卫星3:（demo999） （tg：demo_tg） 《（详细点🔗，其他也有做哦》',
+    ];
+
+    for (const bio of bioPositives) {
+      const hit = api._debug.classify({
+        id: 'exchange-bio',
+        content: '普通回复',
+        urls: [],
+        author: { handle: 'spam_exchange_bio', name: '普通用户', bio, location: '' },
+      });
+      expect(hit.hide).toBe(true);
+      expect(hit.matches.some((m) => m.id === 'spam-bio-wechat-telegram-funnel-high')).toBe(true);
+    }
+
+    const doorWithBio = api._debug.classify({
+      id: 'exchange-door',
+      content: '品牌联名整活我爱了',
+      urls: [],
+      author: {
+        handle: 'spam_exchange_door',
+        name: '芝麻85 | 门口等你',
+        bio: '家政保洁想做得稳，报价要清楚。 卫星1:（demo-a） 卫星2:（demo-b） （tg：demo_tg） 《（详细点🔗，其他也有做哦》',
+        location: '',
+      },
+    });
+    expect(doorWithBio.hide).toBe(true);
+    expect(doorWithBio.matches.some((m) => m.id === 'spam-bio-wechat-telegram-funnel-high')).toBe(true);
+    expect(doorWithBio.matches.some((m) => m.id === 'spam-name-exchange-support-high')).toBe(false);
+
+    const negatives = [
+      { id: 'exchange-ok-1', name: 'BitMart Research', content: '整理交易所公告和市场观察' },
+      { id: 'exchange-ok-2', name: '商务小窗设计笔记', content: '聊聊店铺门头和橱窗展示' },
+      { id: 'exchange-ok-3', name: '普通用户', content: '我在门口等你下班，一起去吃饭' },
+      { id: 'exchange-ok-4', name: '芝麻85 | 门口等你', content: '普通回复' },
+    ];
+
+    for (const n of negatives) {
+      const miss = api._debug.classify({
+        id: n.id,
+        content: n.content,
+        urls: [],
+        author: { handle: `normal_${n.id}`, name: n.name, bio: '', location: '' },
+      });
+      expect(miss.hide).toBe(false);
+    }
+
+    const normalBios = [
+      '卫星1号和卫星2号观测记录，详细点写在论文附录里。',
+      '我用 tg 同步摄影小组通知，也记录卫星影像处理笔记。',
+      '报价要清楚，过程要透明，客户体验自然会变好。',
+    ];
+    for (const bio of normalBios) {
+      const miss = api._debug.classify({
+        id: 'normal-bio',
+        content: '普通回复',
+        urls: [],
+        author: { handle: 'normal_bio', name: '普通用户', bio, location: '' },
+      });
+      expect(miss.hide).toBe(false);
+    }
+  });
+
   it('covers emoji-grid spam, 免费曰p names, and 小号已禁言 location', () => {
     const api = loadDebug();
     api.updateSettings({ enabled: true, level: 'standard', whitelistFollowing: false });
@@ -600,6 +699,32 @@ describe('#123 XVM content filter v1', () => {
       },
     });
     expect(ok.hide).toBe(false);
+
+    const mirror = api._debug.classify({
+      id: 'mirror',
+      content: '中推用户，记录中文推特日常讨论',
+      urls: [],
+      author: {
+        handle: 'normal_c',
+        name: 'Normal C',
+        bio: '中文推特观察，记录日常',
+        location: '',
+      },
+    });
+    expect(mirror.hide).toBe(false);
+  });
+
+  it('does not use 中推 / 中文推特 as built-in content-filter keywords', () => {
+    const sources = [
+      ['rules.json', JSON.stringify(rulesJson)],
+      ['bootstrap-rules.json', JSON.stringify(bootstrapRulesJson)],
+      ['rules.js', readFileSync(resolve(repo, 'src/premium/content-filter/rules.js'), 'utf8')],
+      ['filter.js hard-coded fallback', filter],
+    ];
+    for (const [name, body] of sources) {
+      expect(body.includes('中推'), `${name} must not filter on 中推`).toBe(false);
+      expect(body.includes('中文推特'), `${name} must not filter on 中文推特`).toBe(false);
+    }
   });
 
   it('does not false-positive 福利鸭 / 福利姬 self-mockery bios when keyword is not paired with spam carrier', () => {
@@ -857,14 +982,16 @@ describe('#123 XVM content filter v1', () => {
     });
   });
 
-  it('rules.js bundled fallback stays in sync with rules.json', () => {
+  it('rules.js bundled fallback stays in sync with bootstrap-rules.json only', () => {
     const rulesJs = readFileSync(resolve(repo, 'src/premium/content-filter/rules.js'), 'utf8');
-    for (const id of rulesJson.rules.map((r) => r.id)) {
+    for (const id of bootstrapRulesJson.rules.map((r) => r.id)) {
       expect(rulesJs).toContain(id);
     }
-    for (const id of [...rulesJson.levels.standard, ...rulesJson.levels.strict]) {
+    for (const id of [...bootstrapRulesJson.levels.standard, ...bootstrapRulesJson.levels.strict]) {
       expect(rulesJs).toContain(id);
     }
+    expect(rulesJs).not.toContain('spam-telegram-domain-medium');
+    expect(rulesJs).not.toContain('"type": "domain"');
   });
 
   it('content-filter is opt-in and restores hidden cells when disabled', () => {

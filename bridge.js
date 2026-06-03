@@ -132,7 +132,22 @@ const CONTENT_MESSAGE_KEYS = [
   'contentLeaderboardBackToPrevious',
   'contentLeaderboardEdgeHide',
   'contentLeaderboardEdgeShow',
+  'contentLeaderboardSettings',
+  'contentLeaderboardClose',
+  'contentLeaderboardCloseSettings',
+  'contentLeaderboardSettingsPanelTitle',
+  'contentLeaderboardColumns',
+  'contentLeaderboardSettingsAutoSave',
   'contentLeaderboardTotalViews',
+  'featureLeaderboardShowTop',
+  'featureLeaderboardEdgeHideTitle',
+  'featureLeaderboardEdgeHideDesc',
+  'popupColRank',
+  'popupColIcon',
+  'popupColHandle',
+  'popupColPreview',
+  'popupColViews',
+  'popupColVelocity',
   'contentCopyMdLabel',
   'contentCopyMdDone',
   'contentCopyMdAttribution',
@@ -181,8 +196,8 @@ const CONTENT_MESSAGE_KEYS = [
   'contentLbHotOnly',
   'contentLbHotProTitle',
   'contentLbHotProSub',
-  'contentLbHotMonthly',
-  'contentLbHotAnnual',
+  'contentLbHotDetails',
+  'contentLbHotOpenSite',
   'contentBookmarkMenuInFolder',
   'contentBookmarkMenuNotInAny',
   'contentBookmarkMenuCheckFailed',
@@ -474,6 +489,41 @@ window.addEventListener('message', (event) => {
     safeChromeCall(() => {
       chrome.storage.local.set({ xvmLeaderboardHeight: event.data.height });
     });
+    return;
+  }
+
+  if (type === 'XVM_LEADERBOARD_DISABLE') {
+    safeChromeCall(() => {
+      chrome.storage.sync.set({ featureVelocityLeaderboard: false }, () => {
+        chrome.storage.sync.get(STORAGE_DEFAULTS, (items) => {
+          pushSettings(items);
+        });
+      });
+    });
+    return;
+  }
+
+  if (type === 'XVM_LEADERBOARD_SETTINGS_SAVE' && event.data.patch && typeof event.data.patch === 'object') {
+    const rawPatch = event.data.patch;
+    const patch = {};
+    if (Object.prototype.hasOwnProperty.call(rawPatch, 'leaderboardCount')) {
+      patch.leaderboardCount = normalizeLeaderboardCount(rawPatch.leaderboardCount);
+    }
+    if (Object.prototype.hasOwnProperty.call(rawPatch, 'leaderboardEdgeHideEnabled')) {
+      patch.leaderboardEdgeHideEnabled = rawPatch.leaderboardEdgeHideEnabled !== false;
+    }
+    if (Array.isArray(rawPatch.leaderboardColumns)) {
+      patch.leaderboardColumns = normalizeLeaderboardColumns(rawPatch.leaderboardColumns);
+    }
+    if (Object.keys(patch).length) {
+      safeChromeCall(() => {
+        chrome.storage.sync.set(patch, () => {
+          chrome.storage.sync.get(STORAGE_DEFAULTS, (items) => {
+            pushSettings(items);
+          });
+        });
+      });
+    }
     return;
   }
 

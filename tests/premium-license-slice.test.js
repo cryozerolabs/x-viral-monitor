@@ -100,6 +100,24 @@ describe('#45 step 2 — ADR-0004 storage / secret / productId checklist', () =>
     ).toBe(true);
   });
 
+  it('isolated.js throttles failed background license revalidation', () => {
+    expect(/REVALIDATE_RETRY_MS\s*=\s*5\s*\*\s*60\s*\*\s*1000/.test(isolated),
+      'isolated.js must keep the same 5-minute retry floor as popup-pro.js'
+    ).toBe(true);
+    expect(/function\s+shouldRevalidate\s*\(/.test(isolated),
+      'isolated.js must centralize revalidate gating'
+    ).toBe(true);
+    expect(/stored\.lastTriedAt/.test(isolated),
+      'isolated.js must honor lastTriedAt after network failures'
+    ).toBe(true);
+    expect(/if\s*\(shouldRevalidate\(status,\s*stored\)\)/.test(isolated),
+      'getLicenseStatus() must not revalidate on every status read'
+    ).toBe(true);
+    expect(/if\s*\(shouldRevalidate\(r,\s*stored\)\)/.test(isolated),
+      'resolveTier() must not revalidate on every tier request'
+    ).toBe(true);
+  });
+
   it('isolated.js exposes the documented message contract', () => {
     const must = [
       'XVM_TIER_REQUEST',

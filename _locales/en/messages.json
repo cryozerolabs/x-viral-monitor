@@ -130,6 +130,24 @@
   "contentLeaderboardEdgeShow": {
     "message": "Expand"
   },
+  "contentLeaderboardSettings": {
+    "message": "Open leaderboard settings"
+  },
+  "contentLeaderboardClose": {
+    "message": "Close leaderboard"
+  },
+  "contentLeaderboardCloseSettings": {
+    "message": "Close settings"
+  },
+  "contentLeaderboardSettingsPanelTitle": {
+    "message": "Leaderboard settings"
+  },
+  "contentLeaderboardColumns": {
+    "message": "Visible columns"
+  },
+  "contentLeaderboardSettingsAutoSave": {
+    "message": "Changes are saved automatically and apply to this page immediately."
+  },
   "contentLeaderboardTotalViews": {
     "message": "Total views"
   },
@@ -384,8 +402,6 @@
   "proBannerTrialOne":   { "message": "Trial — 1 day left" },
   "proNudgeTrialEnd":    { "message": "Trial ends in $DAYS$ days — upgrade Pro to keep filtering.", "placeholders": { "DAYS": { "content": "$1" } } },
   "proNudgeTrialEndOne": { "message": "Trial ends in 1 day — upgrade Pro to keep filtering." },
-  "proCtaMonthly":       { "message": "Monthly · $$2.9 / mo" },
-  "proCtaAnnual":        { "message": "Annual · $$29 / yr (save 17%)" },
   "proActivateLabel":    { "message": "Already bought? Enter your license key:" },
   "proActivatePlaceholder": { "message": "creem-XXXXX..." },
   "proActivateBtn":      { "message": "Activate" },
@@ -432,8 +448,6 @@
   "communityDevBadge": { "message": "Community DEV Build" },
   "communityDevSub":   { "message": "All local Pro features are enabled. Official license service and auto-updates belong to the Web Store build." },
   "heroFreeTagline":   { "message": "Most features are free. A few advanced extras are Pro." },
-  "heroCtaUpgradeAnnual":  { "message": "View Pro on the website" },
-  "heroCtaUpgradeMonthly": { "message": "Pricing and scope live on the website" },
   "heroActivateExistingLink": { "message": "Activate existing license" },
   "proScopeTitle":     { "message": "What Pro means" },
   "proScopeBody":      { "message": "Pro covers a small set of advanced extras. Today it mainly powers velocity filtering; the exact paid scope may change by version, so the website has the latest details." },
@@ -495,8 +509,8 @@
   "contentLbHotOnly":      { "message": "Hot only" },
   "contentLbHotProTitle":  { "message": "Velocity filter is a Pro feature" },
   "contentLbHotProSub":    { "message": "Hide low-views tweets, keep what's actually spreading" },
-  "contentLbHotMonthly":   { "message": "Monthly $$2.9" },
-  "contentLbHotAnnual":    { "message": "Annual $$29 (save 17%)" },
+  "contentLbHotDetails":   { "message": "View Pro scope" },
+  "contentLbHotOpenSite":  { "message": "Open website" },
   "cfTitle":        { "message": "Content filter" },
   "cfLockedHint":   { "message": "Content filtering is free. You can enable it here." },
   "cfEnabled":      { "message": "Hide adult / ad / funnel replies" },

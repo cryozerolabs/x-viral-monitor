@@ -15,6 +15,8 @@
       "spam-phishing-airdrop-high",
       "spam-name-click-profile-high",
       "spam-name-funnel-high",
+      "spam-name-exchange-support-high",
+      "spam-bio-wechat-telegram-funnel-high",
       "spam-short-symbol-content-high",
       "spam-bio-zhongtui-high",
       "spam-content-zhongtui-high",
@@ -34,6 +36,8 @@
       "spam-phishing-airdrop-high",
       "spam-name-click-profile-high",
       "spam-name-funnel-high",
+      "spam-name-exchange-support-high",
+      "spam-bio-wechat-telegram-funnel-high",
       "spam-short-symbol-content-high",
       "spam-bio-zhongtui-high",
       "spam-content-zhongtui-high",
@@ -51,7 +55,7 @@
       "id": "hard-telegram-group-funnel",
       "type": "regex",
       "field": "content",
-      "value": "(t\\.me|telegram|电报|飞机).{0,32}(中推|中文推特|福利(资源|视频|社群|社区|导航|群|频道)|成人(资源|视频)|成人视频|私信(加入|加群|进群|领取|获取)|加(群|频道)|进群|群里.{0,8}(福利|资源|视频|约|广告)|频道.{0,8}(福利|资源|视频|广告)|同城.{0,8}(线下|上门|可约)|线下.{0,8}(约|上门|见面)|上门|约P|约炮|曰泡|宝宝.{0,6}(点这里|主页|私信))",
+      "value": "(t\\.me|telegram|电报|飞机).{0,32}(福利(资源|视频|社群|社区|导航|群|频道)|成人(资源|视频)|成人视频|私信(加入|加群|进群|领取|获取)|加(群|频道)|进群|群里.{0,8}(福利|资源|视频|约|广告)|频道.{0,8}(福利|资源|视频|广告)|同城.{0,8}(线下|上门|可约)|线下.{0,8}(约|上门|见面)|上门|约P|约炮|曰泡|宝宝.{0,6}(点这里|主页|私信))",
       "severity": "block"
     },
     {
@@ -132,6 +136,20 @@
       "severity": "high"
     },
     {
+      "id": "spam-name-exchange-support-high",
+      "type": "regex",
+      "field": "name",
+      "value": "((商务小窗|在线接待|高返|返佣).{0,18}bitmart\\d{0,8}|bitmart\\d{0,8}.{0,18}(商务小窗|在线接待|高返|返佣))",
+      "severity": "high"
+    },
+    {
+      "id": "spam-bio-wechat-telegram-funnel-high",
+      "type": "regex",
+      "field": "bio",
+      "value": "卫星[123]?\\s*[:：].{0,80}卫星[123]?\\s*[:：].{0,120}(tg|telegram|电报)\\s*[:：].{0,60}(详细点|其他也有做)",
+      "severity": "high"
+    },
+    {
       "id": "spam-short-symbol-content-high",
       "type": "short-symbol",
       "field": "content",
@@ -142,7 +160,7 @@
       "id": "spam-bio-zhongtui-high",
       "type": "regex",
       "field": "bio",
-      "value": "(中推.{0,6}(资源|群|福利|频道|加我|私聊)|中文推特.{0,6}(资源|群|福利|频道|加我|私聊)|加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
+      "value": "(加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
       "severity": "high"
     },
     {
@@ -177,7 +195,7 @@
       "id": "spam-content-zhongtui-high",
       "type": "regex",
       "field": "content",
-      "value": "(中推|中文推特|加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
+      "value": "(加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
       "severity": "high"
     },
     {

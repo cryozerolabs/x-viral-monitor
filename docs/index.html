@@ -3,26 +3,82 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>X Viral Monitor - X 爆款监测插件</title>
-  <meta name="description" content="X Viral Monitor 在 X 时间线上显示推文流速、热榜、长图阅读和内容过滤。基础功能免费开放，官方 Chrome 扩展支持 Pro 流速过滤。" />
-  <meta name="theme-color" content="#0b1016" />
-  <meta property="og:title" content="X Viral Monitor" />
-  <meta property="og:description" content="把 X 时间线变成爆款捕捉、阅读和过滤控制台。" />
+  <title>X Viral Monitor - X 创作者流速徽章与热点监测插件</title>
+  <meta name="description" content="X Viral Monitor 为 X 时间线添加流速徽章和热点悬浮面板，帮助创作者发现正在起爆的推文，及时参与讨论并获取更多曝光。" />
+  <meta name="application-name" content="X Viral Monitor" />
+  <meta name="theme-color" content="#060812" />
+  <link rel="canonical" href="https://icy-cat.github.io/x-viral-monitor/" />
+  <link rel="alternate" hreflang="zh-CN" href="https://icy-cat.github.io/x-viral-monitor/" />
+  <link rel="alternate" hreflang="en" href="https://icy-cat.github.io/x-viral-monitor/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://icy-cat.github.io/x-viral-monitor/?lang=ja" />
+  <link rel="alternate" hreflang="x-default" href="https://icy-cat.github.io/x-viral-monitor/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="X Viral Monitor" />
+  <meta property="og:url" content="https://icy-cat.github.io/x-viral-monitor/" />
+  <meta property="og:title" content="X Viral Monitor - X 创作者流速徽章与热点监测插件" />
+  <meta property="og:description" content="为 X 时间线添加流速徽章和热点悬浮面板，帮助创作者发现正在起爆的推文，及时参与讨论并获取更多曝光。" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="ja_JP" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="X Viral Monitor - X 创作者流速徽章与热点监测插件" />
+  <meta name="twitter:description" content="为 X 时间线添加流速徽章和热点悬浮面板，帮助创作者发现正在起爆的推文，及时参与讨论并获取更多曝光。" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "X Viral Monitor",
+      "applicationCategory": "BrowserApplication",
+      "operatingSystem": "Chrome, Edge",
+      "softwareVersion": "1.7.13",
+      "description": "X Viral Monitor adds velocity badges and a floating hot-post panel to X, helping creators find posts that are starting to take off and join the conversation earlier.",
+      "url": "https://icy-cat.github.io/x-viral-monitor/",
+      "installUrl": "https://chromewebstore.google.com/detail/x-viral-monitor/dkplofpecmjmbhgjgleeflcnfgfkdfpd",
+      "codeRepository": "https://github.com/Icy-Cat/x-viral-monitor",
+      "license": "https://github.com/Icy-Cat/x-viral-monitor/blob/main/LICENSE",
+      "author": {
+        "@type": "Person",
+        "name": "IcyCat",
+        "url": "https://github.com/Icy-Cat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Monthly Pro subscription",
+          "price": "2.9",
+          "priceCurrency": "USD",
+          "url": "https://www.creem.io/payment/prod_7f7t9EHK3RJlOK37DWr7J"
+        },
+        {
+          "@type": "Offer",
+          "name": "Annual Pro subscription",
+          "price": "29",
+          "priceCurrency": "USD",
+          "url": "https://www.creem.io/payment/prod_69yTiXGXb04DKm46DNVbN9"
+        }
+      ]
+    }
+  </script>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #070a0e;
-      --panel: #101820;
-      --panel-strong: #17222c;
-      --ink: #f3f7f2;
-      --muted: #9da9a6;
-      --line: rgba(255,255,255,.12);
+      --bg: #060812;
+      --bg-2: #090e1c;
+      --panel: #0d1424;
+      --panel-strong: #121d33;
+      --panel-glass: rgba(14, 22, 39, .72);
+      --ink: #f4f7ff;
+      --muted: #94a4bd;
+      --line: rgba(152, 172, 214, .18);
       --green: #58e44e;
       --amber: #ffb31a;
       --red: #ff332e;
       --orange: #ff7a2f;
-      --blue: #72d8ff;
-      --shadow: 0 28px 90px rgba(0,0,0,.46);
+      --blue: #48d8ff;
+      --indigo: #7d8cff;
+      --violet: #a78bfa;
+      --shadow: 0 30px 90px rgba(0,0,0,.5);
+      --glow: 0 0 42px rgba(72, 216, 255, .18), 0 0 80px rgba(125, 140, 255, .14);
       --radius: 8px;
       --max: 1160px;
     }
@@ -34,8 +90,9 @@
     body {
       margin: 0;
       background:
-        radial-gradient(circle at 18% 12%, rgba(255, 87, 47, .18), transparent 28rem),
-        linear-gradient(180deg, #0d131a 0%, var(--bg) 46rem);
+        linear-gradient(120deg, rgba(125, 140, 255, .12) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, #0c1222 0%, var(--bg) 42rem, #04060d 100%);
+      background-size: 180px 180px, auto;
       color: var(--ink);
       font-family: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       line-height: 1.55;
@@ -48,9 +105,9 @@
       pointer-events: none;
       opacity: .18;
       background-image:
-        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
-      background-size: 42px 42px;
+        linear-gradient(rgba(125, 140, 255, .18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(72, 216, 255, .12) 1px, transparent 1px);
+      background-size: 48px 48px;
       mask-image: linear-gradient(180deg, #000 0%, transparent 72%);
     }
 
@@ -66,8 +123,8 @@
       top: 0;
       z-index: 10;
       border-bottom: 1px solid var(--line);
-      background: rgba(7, 10, 14, .82);
-      backdrop-filter: blur(18px);
+      background: rgba(5, 8, 18, .78);
+      backdrop-filter: blur(20px) saturate(140%);
     }
 
     .nav-inner {
@@ -83,7 +140,7 @@
       align-items: center;
       gap: 12px;
       font-weight: 800;
-      letter-spacing: .02em;
+      letter-spacing: 0;
       white-space: nowrap;
     }
 
@@ -118,7 +175,8 @@
       padding: 3px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255,255,255,.05);
+      background: rgba(255,255,255,.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
     }
 
     .lang-switch button {
@@ -136,8 +194,8 @@
     }
 
     .lang-switch button[aria-pressed="true"] {
-      color: #130900;
-      background: var(--amber);
+      color: #06101f;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
     }
 
     .hero {
@@ -147,6 +205,8 @@
       align-items: center;
       overflow: hidden;
       border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(72,216,255,.04) 54%, transparent 100%);
     }
 
     .hero-scene {
@@ -160,11 +220,20 @@
       position: absolute;
       inset: 7% -4% 0;
       background:
-        linear-gradient(120deg, transparent 0 30%, rgba(255, 82, 48, .14) 30% 32%, transparent 32% 100%),
-        linear-gradient(160deg, rgba(88, 228, 78, .18), transparent 34%),
-        linear-gradient(0deg, rgba(0,0,0,.78), transparent 44%);
+        linear-gradient(120deg, transparent 0 28%, rgba(72, 216, 255, .16) 28% 29%, transparent 29% 100%),
+        linear-gradient(152deg, transparent 0 46%, rgba(125, 140, 255, .18) 46% 47%, transparent 47% 100%),
+        linear-gradient(0deg, rgba(3,5,12,.9), transparent 52%);
       transform: skewY(-6deg);
       transform-origin: 20% 20%;
+    }
+
+    .hero-scene::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(180deg, rgba(255,255,255,.03) 0 1px, transparent 1px 12px);
+      opacity: .28;
+      pointer-events: none;
     }
 
     .ticker-board {
@@ -173,11 +242,24 @@
       top: 11vh;
       width: min(520px, 44vw);
       padding: 16px;
-      border: 1px solid rgba(255,255,255,.1);
+      border: 1px solid rgba(137, 157, 210, .22);
       border-radius: 18px;
-      background: rgba(9, 14, 20, .72);
-      box-shadow: var(--shadow);
-      transform: rotate(-2deg);
+      background:
+        linear-gradient(180deg, rgba(17, 27, 50, .88), rgba(8, 13, 25, .82));
+      box-shadow: var(--shadow), var(--glow);
+      transform: rotate(-1deg);
+      backdrop-filter: blur(16px);
+    }
+
+    .ticker-board::before {
+      content: "LIVE VELOCITY";
+      display: block;
+      margin: 2px 4px 10px;
+      color: var(--blue);
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
 
     .tweet-row {
@@ -187,7 +269,7 @@
       align-items: center;
       min-height: 62px;
       padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(152, 172, 214, .12);
     }
 
     .tweet-row:last-child { border-bottom: 0; }
@@ -196,8 +278,8 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #25303b, #111820);
-      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(135deg, #253047, #111827);
+      border: 1px solid rgba(152, 172, 214, .18);
     }
 
     .tweet-lines span {
@@ -205,7 +287,7 @@
       height: 8px;
       margin: 7px 0;
       border-radius: 99px;
-      background: rgba(255,255,255,.12);
+      background: rgba(183, 198, 231, .13);
     }
 
     .tweet-lines span:nth-child(1) { width: 82%; }
@@ -223,6 +305,7 @@
       font-weight: 800;
       color: #07100a;
       background: linear-gradient(135deg, var(--green), #b9ff55);
+      box-shadow: 0 0 24px rgba(88, 228, 78, .18);
     }
 
     .rate-pill .rate-emoji {
@@ -233,11 +316,13 @@
     .tweet-row:nth-child(2) .rate-pill {
       color: #1c0d00;
       background: linear-gradient(135deg, var(--amber), #ff7a00);
+      box-shadow: 0 0 24px rgba(255, 179, 26, .18);
     }
 
     .tweet-row:nth-child(3) .rate-pill {
       color: white;
       background: linear-gradient(135deg, var(--red), #ff7430);
+      box-shadow: 0 0 24px rgba(255, 51, 46, .22);
     }
 
     .hero-content {
@@ -254,8 +339,9 @@
       color: var(--blue);
       font-size: 14px;
       font-weight: 800;
-      letter-spacing: .08em;
+      letter-spacing: 0;
       text-transform: uppercase;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
     }
 
     .kicker::before {
@@ -267,17 +353,18 @@
 
     h1 {
       margin: 20px 0 18px;
-      font-family: Georgia, "Times New Roman", "Songti SC", serif;
-      font-size: clamp(48px, 8vw, 92px);
-      line-height: .93;
+      font-family: "Aptos Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 88px;
+      line-height: .9;
       letter-spacing: 0;
+      text-wrap: balance;
     }
 
     .lead {
       max-width: 620px;
       margin: 0 0 30px;
-      color: #c5cec9;
-      font-size: clamp(18px, 2vw, 22px);
+      color: #cbd6e9;
+      font-size: 21px;
     }
 
     .cta-row {
@@ -297,28 +384,31 @@
       border: 1px solid rgba(255,255,255,.14);
       border-radius: var(--radius);
       font-weight: 800;
-      background: rgba(255,255,255,.07);
+      background: rgba(255,255,255,.06);
       color: var(--ink);
-      box-shadow: 0 8px 24px rgba(0,0,0,.22);
+      box-shadow: 0 10px 28px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
     }
 
     .btn.primary {
-      color: #190600;
+      color: #06101f;
       border-color: transparent;
-      background: linear-gradient(135deg, #ffcf33, #ff3b30 80%);
+      background: linear-gradient(135deg, var(--blue), var(--indigo) 58%, var(--violet));
+      box-shadow: 0 16px 40px rgba(72, 216, 255, .2), 0 12px 34px rgba(125, 140, 255, .2);
     }
 
     .btn:hover { transform: translateY(-1px); }
 
     section {
+      scroll-margin-top: 84px;
       padding: 76px 0;
       border-bottom: 1px solid var(--line);
     }
 
     h2 {
       margin: 0 0 18px;
-      font-family: Georgia, "Times New Roman", "Songti SC", serif;
-      font-size: clamp(32px, 5vw, 54px);
+      font-family: "Aptos Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 52px;
       line-height: 1;
       letter-spacing: 0;
     }
@@ -336,13 +426,35 @@
       gap: 14px;
     }
 
+    .install-grid.primary-install {
+      grid-template-columns: minmax(0, 720px);
+    }
+
+    .install-grid.primary-install .install-card {
+      min-height: 260px;
+    }
+
     .install-card,
     .price-card,
     .feature-card {
+      position: relative;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
-      box-shadow: 0 18px 50px rgba(0,0,0,.2);
+      background:
+        linear-gradient(180deg, rgba(25, 36, 65, .78), rgba(10, 15, 29, .72));
+      box-shadow: 0 18px 50px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    .install-card::before,
+    .price-card::before,
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--indigo), transparent);
+      opacity: .88;
     }
 
     .install-card {
@@ -360,13 +472,14 @@
       display: block;
       margin-bottom: 8px;
       font-size: 20px;
+      letter-spacing: 0;
     }
 
     .install-card p,
     .price-card p,
     .feature-card p {
       margin: 0;
-      color: var(--muted);
+      color: #a9b7cf;
     }
 
     .tag {
@@ -375,19 +488,18 @@
       padding: 5px 9px;
       border-radius: 999px;
       color: #061009;
-      background: var(--green);
+      background: linear-gradient(135deg, #7cffd0, var(--green));
       font-size: 12px;
       font-weight: 900;
-      text-transform: uppercase;
     }
 
     .tag.orange { background: var(--amber); color: #180900; }
-    .tag.gray { background: #d0d7d2; color: #0b1016; }
+    .tag.gray { background: linear-gradient(135deg, #d9e3ff, #aeb9d4); color: #0b1016; }
 
     .steps {
       margin: 18px 0 0;
       padding-left: 19px;
-      color: #c4ccc7;
+      color: #c8d3e6;
     }
 
     .steps li { margin: 7px 0; }
@@ -417,6 +529,13 @@
       background: rgba(0,0,0,.22);
     }
 
+    .price:hover,
+    .install-card:hover,
+    .feature-card:hover {
+      border-color: rgba(72, 216, 255, .34);
+      box-shadow: 0 22px 58px rgba(0,0,0,.28), 0 0 46px rgba(72,216,255,.1), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
     .price b {
       display: block;
       margin-bottom: 6px;
@@ -430,7 +549,8 @@
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
+      background: rgba(13, 20, 36, .68);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
     }
 
     .matrix th,
@@ -447,17 +567,21 @@
     .matrix th {
       width: 26%;
       color: #fff;
-      background: rgba(255,255,255,.045);
+      background: rgba(125, 140, 255, .08);
     }
 
     .matrix td {
-      color: #c5cdc8;
+      color: #c4d0e6;
     }
 
     .features {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
+    }
+
+    .community-links {
+      margin-top: 18px;
     }
 
     .feature-card {
@@ -473,16 +597,17 @@
       border: 1px solid rgba(255,255,255,.14);
       border-radius: var(--radius);
       background:
-        linear-gradient(120deg, rgba(88,228,78,.1), transparent 42%),
-        rgba(255,255,255,.045);
+        linear-gradient(120deg, rgba(72,216,255,.12), transparent 42%),
+        rgba(15, 23, 42, .74);
+      box-shadow: var(--glow);
     }
 
     .code-lines {
       padding: 18px;
       border-radius: var(--radius);
       background: #05080b;
-      border: 1px solid rgba(255,255,255,.1);
-      color: #86f58b;
+      border: 1px solid rgba(72,216,255,.18);
+      color: #8be8ff;
       font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
       font-size: 13px;
       overflow: auto;
@@ -509,6 +634,9 @@
 
     @media (max-width: 920px) {
       .nav-links { display: none; }
+      h1 { font-size: 64px; }
+      h2 { font-size: 42px; }
+      .lead { font-size: 18px; }
       .ticker-board {
         top: 42px;
         right: 24px;
@@ -531,6 +659,9 @@
     @media (max-width: 560px) {
       .wrap { width: min(100% - 24px, var(--max)); }
       .hero { min-height: auto; }
+      h1 { font-size: 46px; }
+      h2 { font-size: 30px; line-height: 1.08; }
+      .lead { font-size: 17px; }
       .ticker-board { display: none; }
       .hero-content { padding: 52px 0 28px; }
       .tweet-row { grid-template-columns: 28px 1fr; }
@@ -565,10 +696,10 @@
       <div class="nav-actions">
         <div class="nav-links" aria-label="主导航">
           <a href="#install">安装</a>
+          <a href="#features">能力</a>
           <a href="#pro">Pro</a>
-          <a href="#versions">版本区别</a>
           <a href="#privacy">隐私</a>
-          <a href="https://github.com/Icy-Cat/x-viral-monitor">GitHub</a>
+          <a href="#versions">社区版</a>
         </div>
         <div class="lang-switch" aria-label="Language">
           <button type="button" data-lang="zh" aria-pressed="true">中</button>
@@ -592,11 +723,11 @@
         <div class="hero-content">
           <span class="kicker">X timeline intelligence</span>
           <h1>X Viral Monitor</h1>
-          <p class="lead">在 X 时间线上实时识别推文流速、爆帖指数和当前页面热榜。Chrome 官方版支持 Pro 订阅；GitHub 社区版和脚本版保持开源，可自行安装和构建。</p>
+          <p class="lead">在推文起爆前，先一步看到它。X Viral Monitor 为时间线添加流速徽章和热点悬浮面板，帮助创作者发现高流量内容，及时参与讨论，获取更多曝光。</p>
           <div class="cta-row">
             <a class="btn primary" href="https://chromewebstore.google.com/detail/x-viral-monitor/dkplofpecmjmbhgjgleeflcnfgfkdfpd">安装 Chrome 扩展</a>
-            <a class="btn" href="#install">选择安装方式</a>
-            <a class="btn" href="https://github.com/Icy-Cat/x-viral-monitor">查看源码</a>
+            <a class="btn" href="#features">看核心能力</a>
+            <a class="btn" href="#pro">了解 Pro</a>
           </div>
         </div>
       </div>
@@ -604,50 +735,29 @@
 
     <section id="install">
       <div class="wrap">
-        <h2>三种安装方式</h2>
-        <p class="section-lead">桌面 Chrome 用户推荐官方扩展。只需要基础徽章和排行榜，可以使用 Tampermonkey。iPhone / iPad 用户走 Safari UserScripts 移动版。</p>
-        <div class="install-grid">
+        <h2>安装官方 Chrome 扩展</h2>
+        <p class="section-lead">推荐从 Chrome Web Store 安装，自动更新、功能完整，也支持后续 Pro 激活。</p>
+        <div class="install-grid primary-install">
           <article class="install-card">
             <div>
               <span class="tag">推荐</span>
               <strong>Chrome / Edge 扩展</strong>
-              <p>完整功能入口：流速徽章、热榜、内容过滤、长图阅读、Grok 回复辅助，并支持 Pro 流速过滤。</p>
-              <ol class="steps">
-                <li>打开 Chrome Web Store 页面</li>
-                <li>点击添加到 Chrome</li>
-                <li>在 X 页面右上角打开插件设置</li>
-              </ol>
+              <p>把流速徽章、热点悬浮面板、长图阅读、内容过滤和 Grok 回复辅助直接加到 X 时间线里。</p>
             </div>
             <a class="btn primary" href="https://chromewebstore.google.com/detail/x-viral-monitor/dkplofpecmjmbhgjgleeflcnfgfkdfpd">去应用商店安装</a>
           </article>
+        </div>
+      </div>
+    </section>
 
-          <article class="install-card">
-            <div>
-              <span class="tag orange">免费脚本</span>
-              <strong>Tampermonkey 油猴脚本</strong>
-              <p>桌面精简版，适合只想要流速徽章和当前页面热榜的用户。</p>
-              <ol class="steps">
-                <li>安装 Tampermonkey 或 Violentmonkey</li>
-                <li>打开脚本 raw 地址</li>
-                <li>在脚本管理器中确认安装</li>
-              </ol>
-            </div>
-            <a class="btn" href="https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/userscript/x-viral-monitor.user.js">安装桌面脚本</a>
-          </article>
-
-          <article class="install-card">
-            <div>
-              <span class="tag gray">iOS Safari</span>
-              <strong>Safari UserScripts</strong>
-              <p>移动版脚本使用 DOM fallback，默认保留徽章，关闭浮动排行榜以适配小屏。</p>
-              <ol class="steps">
-                <li>安装 Userscripts App</li>
-                <li>在 Safari 扩展设置中启用</li>
-                <li>导入移动版脚本</li>
-              </ol>
-            </div>
-            <a class="btn" href="https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/userscript/x-viral-monitor.mobile.user.js">安装移动脚本</a>
-          </article>
+    <section id="features">
+      <div class="wrap">
+        <h2>核心能力</h2>
+        <div class="features">
+          <article class="feature-card"><strong>流速徽章</strong><p>直接在推文旁显示 views/hour。看到 🚀 小火箭时，说明这条推文正在起爆，值得重点关注。</p></article>
+          <article class="feature-card"><strong>热点悬浮面板</strong><p>自动整理当前页面的高流速推文，不用反复刷时间线，也能抓住正在升温的话题。</p></article>
+          <article class="feature-card"><strong>X 创作者增长辅助</strong><p>更早发现高流量内容，在合适的推文下留下有观点、有信息量的评论，让账号进入更多活跃讨论。</p></article>
+          <article class="feature-card"><strong>长图与内容增强</strong><p>长图阅读、图片增强、内容过滤和 Grok 回复辅助，减少刷 X 和参与讨论时的阻力。</p></article>
         </div>
       </div>
     </section>
@@ -655,70 +765,31 @@
     <section id="pro">
       <div class="wrap">
         <h2>Pro 订阅</h2>
-        <p class="section-lead">X Viral Monitor 的基础功能免费开放。Pro 面向更进阶的使用场景，目前主要是流速过滤；以后如果调整付费范围，会在本页同步说明。</p>
+        <p class="section-lead">常用功能可以免费用。Pro 目前主要面向更进阶的流速过滤。</p>
         <div class="pricing">
           <article class="price-card">
             <strong>购买 Pro</strong>
-            <p>购买后会获得 License Key，可在 Chrome 扩展的 Pro 页面激活。最终价格以支付页显示为准。</p>
+            <p>购买后在 Chrome 扩展的 Pro 页面激活 License Key。价格以支付页为准。</p>
             <div class="price-row">
               <div class="price">
                 <b>$2.9</b>
                 <span>月度订阅</span>
-                <p>适合短期试用或阶段性使用。</p>
+                <p>适合短期试用。</p>
                 <p><a class="btn" href="https://www.creem.io/payment/prod_7f7t9EHK3RJlOK37DWr7J">购买月度</a></p>
               </div>
               <div class="price">
                 <b>$29</b>
                 <span>年度订阅，约省 17%</span>
-                <p>适合长期监控 X 时间线的用户。</p>
+                <p>适合长期使用。</p>
                 <p><a class="btn primary" href="https://www.creem.io/payment/prod_69yTiXGXb04DKm46DNVbN9">购买年度</a></p>
               </div>
             </div>
           </article>
           <article class="price-card">
             <strong>基础功能免费开放</strong>
-            <p>流速徽章、当前页面热榜、书签数显示、图片查看增强、长图阅读、内容过滤、Markdown 复制、感谢星图和 Grok 回复辅助等常用功能，不需要开通 Pro。</p>
-            <p style="margin-top:16px">Pro License 仅用于官方 Chrome 扩展内的 Pro 功能。客户端源码开放，付费部分主要覆盖官方构建、自动更新、License 服务、维护支持和持续更新。</p>
+            <p>流速徽章、当前页热榜、书签数、图片增强、长图阅读、内容过滤、Markdown 复制、感谢星图和 Grok 回复辅助等常用能力，不需要开通 Pro。</p>
+            <p style="margin-top:16px">Pro License 只用于官方 Chrome 扩展内的 Pro 功能。源码仍开放，付费主要覆盖官方构建、自动更新、License 服务和持续维护。</p>
           </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="versions">
-      <div class="wrap">
-        <h2>官方版 vs GitHub 社区版</h2>
-        <p class="section-lead">同一套源码按 MIT 协议开放。Chrome Web Store 版本是官方发行版；GitHub 构建、自行加载、油猴脚本和 Safari UserScripts 属于社区版或自行安装路径。</p>
-        <table class="matrix">
-          <tbody>
-            <tr>
-              <th>安装和更新</th>
-              <td>Chrome Web Store 官方版提供一键安装和自动更新。GitHub 社区版需要自行下载 Release、开发者模式加载或安装脚本。</td>
-            </tr>
-            <tr>
-              <th>Pro 激活</th>
-              <td>Pro 订阅面向官方 Chrome 扩展，支持 License 激活和状态校验。自建版本可审计和修改源码，但不包含官方 License 服务支持。</td>
-            </tr>
-            <tr>
-              <th>维护支持</th>
-              <td>官方版包含维护支持和持续更新。社区版按 MIT 协议原样提供，适合开发者审计、二次开发和提交 PR。</td>
-            </tr>
-            <tr>
-              <th>脚本版本</th>
-              <td>Tampermonkey 和 Safari UserScripts 是免费轻量路径，重点覆盖流速徽章和移动端可用性，不等同于完整 Chrome 扩展。</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <div class="wrap">
-        <h2>核心能力</h2>
-        <div class="features">
-          <article class="feature-card"><strong>流速徽章</strong><p>每条推文旁显示 views/hour，快速判断内容是否正在起量。</p></article>
-          <article class="feature-card"><strong>当前页面热榜</strong><p>浮动面板按流速排序当前可见推文，支持点击回跳。</p></article>
-          <article class="feature-card"><strong>长图阅读</strong><p>X 灯箱内支持滚轮缩放、拖拽平移和长图纵向阅读。</p></article>
-          <article class="feature-card"><strong>内容过滤</strong><p>本地规则过滤 spam、色情和电报漏斗，规则可远程更新。</p></article>
         </div>
       </div>
     </section>
@@ -728,15 +799,47 @@
         <div class="privacy-band">
           <div>
             <h2>隐私边界</h2>
-            <p class="section-lead">扩展从你正在访问的 x.com / pro.x.com 页面和 X 自身响应中读取数据。功能计算在浏览器本地完成，不加入统计 SDK，不放追踪像素。</p>
+            <p class="section-lead">扩展只在你打开的 X 页面内工作。数据处理尽量留在本地，不接入统计 SDK，也不放追踪像素。</p>
           </div>
           <div class="code-lines" aria-label="privacy summary">
             no analytics<br>
             no tracking pixel<br>
             local settings in chrome.storage<br>
             Pro License check via xvm-license Worker<br>
-            source available on GitHub
+            community build available
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="versions">
+      <div class="wrap">
+        <h2>社区版补充</h2>
+        <p class="section-lead">主要推荐安装官方 Chrome 扩展。需要审计源码、自己构建，或只想使用轻量脚本时，可以走下面的社区路径。</p>
+        <table class="matrix">
+          <tbody>
+            <tr>
+              <th>官方扩展</th>
+              <td>推荐日常使用：一键安装、自动更新，支持 Pro 激活和官方维护。</td>
+            </tr>
+            <tr>
+              <th>油猴脚本</th>
+              <td>免费轻量，适合只需要流速徽章和当前页热榜的桌面用户。</td>
+            </tr>
+            <tr>
+              <th>Safari UserScripts</th>
+              <td>移动端补充路径，默认保留徽章能力，弱化浮动热榜以适配小屏。</td>
+            </tr>
+            <tr>
+              <th>源码</th>
+              <td>按 MIT 协议开放，欢迎查看源码、提 issue 或提交 PR。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cta-row community-links">
+          <a class="btn" href="https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/userscript/x-viral-monitor.user.js">桌面脚本</a>
+          <a class="btn" href="https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/userscript/x-viral-monitor.mobile.user.js">移动脚本</a>
+          <a class="btn" href="https://github.com/Icy-Cat/x-viral-monitor">查看源码</a>
         </div>
       </div>
     </section>
@@ -744,7 +847,7 @@
 
   <footer>
     <div class="wrap">
-      <span>MIT Licensed. Built for X power users.</span>
+      <span>MIT Licensed. 社区版可在 GitHub 查看源码并自行构建。</span>
       <div class="foot-links">
         <a href="https://github.com/Icy-Cat/x-viral-monitor">GitHub</a>
         <a href="https://chromewebstore.google.com/detail/x-viral-monitor/dkplofpecmjmbhgjgleeflcnfgfkdfpd">Chrome Web Store</a>
@@ -756,135 +859,135 @@
     const siteI18n = {
       zh: {
         lang: 'zh-CN',
-        title: 'X Viral Monitor - X 爆款监测插件',
-        description: 'X Viral Monitor 在 X 时间线上显示推文流速、热榜、长图阅读和内容过滤。基础功能免费开放，官方 Chrome 扩展支持 Pro 流速过滤。',
-        nav: ['安装', 'Pro', '版本区别', '隐私', 'GitHub'],
+        title: 'X Viral Monitor - X 创作者流速徽章与热点监测插件',
+        ogLocale: 'zh_CN',
+        description: 'X Viral Monitor 为 X 时间线添加流速徽章和热点悬浮面板，帮助创作者发现正在起爆的推文，及时参与讨论并获取更多曝光。',
+        nav: ['安装', '能力', 'Pro', '隐私', '社区版'],
         kicker: 'X timeline intelligence',
         heroTitle: 'X Viral Monitor',
-        heroLead: '在 X 时间线上实时识别推文流速、爆帖指数和当前页面热榜。Chrome 官方版支持 Pro 订阅；GitHub 社区版和脚本版保持开源，可自行安装和构建。',
-        heroCtas: ['安装 Chrome 扩展', '选择安装方式', '查看源码'],
-        installTitle: '三种安装方式',
-        installLead: '桌面 Chrome 用户推荐官方扩展。只需要基础徽章和排行榜，可以使用 Tampermonkey。iPhone / iPad 用户走 Safari UserScripts 移动版。',
+        heroLead: '在推文起爆前，先一步看到它。X Viral Monitor 为时间线添加流速徽章和热点悬浮面板，帮助创作者发现高流量内容，及时参与讨论，获取更多曝光。',
+        heroCtas: ['安装 Chrome 扩展', '看核心能力', '了解 Pro'],
+        installTitle: '安装官方 Chrome 扩展',
+        installLead: '推荐从 Chrome Web Store 安装，自动更新、功能完整，也支持后续 Pro 激活。',
         installCards: [
-          ['推荐', 'Chrome / Edge 扩展', '完整功能入口：流速徽章、热榜、内容过滤、长图阅读、Grok 回复辅助，并支持 Pro 流速过滤。', ['打开 Chrome Web Store 页面', '点击添加到 Chrome', '在 X 页面右上角打开插件设置'], '去应用商店安装'],
-          ['免费脚本', 'Tampermonkey 油猴脚本', '桌面精简版，适合只想要流速徽章和当前页面热榜的用户。', ['安装 Tampermonkey 或 Violentmonkey', '打开脚本 raw 地址', '在脚本管理器中确认安装'], '安装桌面脚本'],
-          ['iOS Safari', 'Safari UserScripts', '移动版脚本使用 DOM fallback，默认保留徽章，关闭浮动排行榜以适配小屏。', ['安装 Userscripts App', '在 Safari 扩展设置中启用', '导入移动版脚本'], '安装移动脚本'],
+          ['推荐', 'Chrome / Edge 扩展', '把流速徽章、热点悬浮面板、长图阅读、内容过滤和 Grok 回复辅助直接加到 X 时间线里。', [], '去应用商店安装'],
         ],
         proTitle: 'Pro 订阅',
-        proLead: 'X Viral Monitor 的基础功能免费开放。Pro 面向更进阶的使用场景，目前主要是流速过滤；以后如果调整付费范围，会在本页同步说明。',
+        proLead: '常用功能可以免费用。Pro 目前主要面向更进阶的流速过滤。',
         priceMainTitle: '购买 Pro',
-        priceMainText: '购买后会获得 License Key，可在 Chrome 扩展的 Pro 页面激活。最终价格以支付页显示为准。',
-        priceMonthly: ['月度订阅', '适合短期试用或阶段性使用。', '购买月度'],
-        priceAnnual: ['年度订阅，约省 17%', '适合长期监控 X 时间线的用户。', '购买年度'],
+        priceMainText: '购买后在 Chrome 扩展的 Pro 页面激活 License Key。价格以支付页为准。',
+        priceMonthly: ['月度订阅', '适合短期试用。', '购买月度'],
+        priceAnnual: ['年度订阅，约省 17%', '适合长期使用。', '购买年度'],
         freeTitle: '基础功能免费开放',
-        freeText1: '流速徽章、当前页面热榜、书签数显示、图片查看增强、长图阅读、内容过滤、Markdown 复制、感谢星图和 Grok 回复辅助等常用功能，不需要开通 Pro。',
-        freeText2: 'Pro License 仅用于官方 Chrome 扩展内的 Pro 功能。客户端源码开放，付费部分主要覆盖官方构建、自动更新、License 服务、维护支持和持续更新。',
-        versionsTitle: '官方版 vs GitHub 社区版',
-        versionsLead: '同一套源码按 MIT 协议开放。Chrome Web Store 版本是官方发行版；GitHub 构建、自行加载、油猴脚本和 Safari UserScripts 属于社区版或自行安装路径。',
+        freeText1: '流速徽章、当前页热榜、书签数、图片增强、长图阅读、内容过滤、Markdown 复制、感谢星图和 Grok 回复辅助等常用能力，不需要开通 Pro。',
+        freeText2: 'Pro License 只用于官方 Chrome 扩展内的 Pro 功能。源码仍开放，付费主要覆盖官方构建、自动更新、License 服务和持续维护。',
+        versionsTitle: '社区版补充',
+        versionsLead: '主要推荐安装官方 Chrome 扩展。需要审计源码、自己构建，或只想使用轻量脚本时，可以走下面的社区路径。',
         matrix: [
-          ['安装和更新', 'Chrome Web Store 官方版提供一键安装和自动更新。GitHub 社区版需要自行下载 Release、开发者模式加载或安装脚本。'],
-          ['Pro 激活', 'Pro 订阅面向官方 Chrome 扩展，支持 License 激活和状态校验。自建版本可审计和修改源码，但不包含官方 License 服务支持。'],
-          ['维护支持', '官方版包含维护支持和持续更新。社区版按 MIT 协议原样提供，适合开发者审计、二次开发和提交 PR。'],
-          ['脚本版本', 'Tampermonkey 和 Safari UserScripts 是免费轻量路径，重点覆盖流速徽章和移动端可用性，不等同于完整 Chrome 扩展。'],
+          ['官方扩展', '推荐日常使用：一键安装、自动更新，支持 Pro 激活和官方维护。'],
+          ['油猴脚本', '免费轻量，适合只需要流速徽章和当前页热榜的桌面用户。'],
+          ['Safari UserScripts', '移动端补充路径，默认保留徽章能力，弱化浮动热榜以适配小屏。'],
+          ['源码', '按 MIT 协议开放，欢迎查看源码、提 issue 或提交 PR。'],
         ],
+        communityLinks: ['桌面脚本', '移动脚本', '查看源码'],
         featureTitle: '核心能力',
         features: [
-          ['流速徽章', '每条推文旁显示 views/hour，快速判断内容是否正在起量。'],
-          ['当前页面热榜', '浮动面板按流速排序当前可见推文，支持点击回跳。'],
-          ['长图阅读', 'X 灯箱内支持滚轮缩放、拖拽平移和长图纵向阅读。'],
-          ['内容过滤', '本地规则过滤 spam、色情和电报漏斗，规则可远程更新。'],
+          ['流速徽章', '直接在推文旁显示 views/hour。看到 🚀 小火箭时，说明这条推文正在起爆，值得重点关注。'],
+          ['热点悬浮面板', '自动整理当前页面的高流速推文，不用反复刷时间线，也能抓住正在升温的话题。'],
+          ['X 创作者增长辅助', '更早发现高流量内容，在合适的推文下留下有观点、有信息量的评论，让账号进入更多活跃讨论。'],
+          ['长图与内容增强', '长图阅读、图片增强、内容过滤和 Grok 回复辅助，减少刷 X 和参与讨论时的阻力。'],
         ],
         privacyTitle: '隐私边界',
-        privacyLead: '扩展从你正在访问的 x.com / pro.x.com 页面和 X 自身响应中读取数据。功能计算在浏览器本地完成，不加入统计 SDK，不放追踪像素。',
-        footer: 'MIT Licensed. Built for X power users.',
+        privacyLead: '扩展只在你打开的 X 页面内工作。数据处理尽量留在本地，不接入统计 SDK，也不放追踪像素。',
+        footer: 'MIT Licensed. 社区版可在 GitHub 查看源码并自行构建。',
       },
       en: {
         lang: 'en',
-        title: 'X Viral Monitor - X growth velocity extension',
-        description: 'X Viral Monitor adds velocity badges, hot-page rankings, long-image reading, content filtering, and Pro velocity filtering to X. Install it as a Chrome extension, Tampermonkey userscript, or iOS Safari UserScripts build.',
-        nav: ['Install', 'Pro', 'Versions', 'Privacy', 'GitHub'],
+        title: 'X Viral Monitor - X Velocity Badges and Hot Post Monitor for Creators',
+        ogLocale: 'en_US',
+        description: 'X Viral Monitor adds velocity badges and a floating hot-post panel to X, helping creators find posts that are starting to take off and join the conversation earlier.',
+        nav: ['Install', 'Features', 'Pro', 'Privacy', 'Community'],
         kicker: 'X timeline intelligence',
         heroTitle: 'X Viral Monitor',
-        heroLead: 'Spot tweet velocity, viral score, and page-level hot posts directly on X. The official Chrome build supports Pro subscriptions; GitHub and userscript builds stay open-source and self-buildable.',
-        heroCtas: ['Install Chrome extension', 'Choose install path', 'View source'],
-        installTitle: 'Three ways to install',
-        installLead: 'Use the official extension on desktop Chrome. Use Tampermonkey if you only need badges and the leaderboard. Use Safari UserScripts on iPhone or iPad.',
+        heroLead: 'See a post before it takes off. X Viral Monitor adds velocity badges and a floating hot-post panel to your timeline, so creators can find high-traffic posts, join the right discussions, and earn more exposure.',
+        heroCtas: ['Install Chrome extension', 'See core features', 'Learn Pro'],
+        installTitle: 'Install the official Chrome extension',
+        installLead: 'Install from the Chrome Web Store for the full feature set, automatic updates, and future Pro activation.',
         installCards: [
-          ['Recommended', 'Chrome / Edge extension', 'The full experience: velocity badges, hot list, content filter, long-image reader, Grok reply helper, and Pro velocity filtering.', ['Open the Chrome Web Store listing', 'Click Add to Chrome', 'Open the extension settings from X'], 'Install from Web Store'],
-          ['Free script', 'Tampermonkey userscript', 'A lightweight desktop build for users who only need velocity badges and the current-page leaderboard.', ['Install Tampermonkey or Violentmonkey', 'Open the raw script URL', 'Confirm installation in the script manager'], 'Install desktop script'],
-          ['iOS Safari', 'Safari UserScripts', 'The mobile build uses DOM fallback, keeps badges on, and disables the floating leaderboard by default for small screens.', ['Install the Userscripts App', 'Enable it in Safari extension settings', 'Import the mobile script'], 'Install mobile script'],
+          ['Recommended', 'Chrome / Edge extension', 'Add velocity badges, the floating hot-post panel, long-image reading, content filtering, and Grok reply help directly to X.', [], 'Install from Web Store'],
         ],
         proTitle: 'Pro subscription',
-        proLead: 'Most everyday X Viral Monitor features are free. Pro is reserved for a small set of advanced extras, currently centered on velocity filtering. If the paid scope changes, this page will keep the latest details.',
+        proLead: 'Everyday features are free. Pro currently focuses on advanced velocity filtering.',
         priceMainTitle: 'Current pricing',
-        priceMainText: 'After purchase, activate your License Key in the Chrome extension Pro tab. Final pricing is shown on the checkout page.',
-        priceMonthly: ['Monthly subscription', 'Good for short trials or temporary monitoring.', 'Buy monthly'],
-        priceAnnual: ['Annual subscription, about 17% off', 'Best for long-running X timeline monitoring.', 'Buy annual'],
+        priceMainText: 'After purchase, activate your License Key in the Chrome extension Pro tab. Checkout shows the final price.',
+        priceMonthly: ['Monthly subscription', 'Good for a short trial.', 'Buy monthly'],
+        priceAnnual: ['Annual subscription, about 17% off', 'Good for long-term use.', 'Buy annual'],
         freeTitle: 'Most features are free',
-        freeText1: 'Velocity badges, current-page hot list, bookmark counts, image viewer upgrades, long-image reading, content filtering, Markdown copy, Thank-You Star Chart, Grok reply drafts, and other everyday tools are free to use.',
-        freeText2: 'The Pro License applies only to Pro features in the official Chrome extension. The client source stays open; the paid part mainly covers the official build, auto-updates, License service, support, and ongoing maintenance.',
-        versionsTitle: 'Official build vs GitHub community build',
-        versionsLead: 'The same codebase is MIT licensed. Chrome Web Store is the official distribution; GitHub builds, manual installs, userscripts, and Safari UserScripts are community or self-built paths.',
+        freeText1: 'Velocity badges, page hot list, bookmark counts, image upgrades, long-image reading, content filtering, Markdown copy, Thank-You Star Chart, and Grok reply drafts do not require Pro.',
+        freeText2: 'The Pro License only applies to Pro features in the official Chrome extension. The source stays open; payment mainly covers the official build, auto-updates, License service, and ongoing maintenance.',
+        versionsTitle: 'Community options',
+        versionsLead: 'The official Chrome extension is the recommended path. Use community options only if you want to audit the source, build it yourself, or install a lightweight userscript.',
         matrix: [
-          ['Install and updates', 'The Chrome Web Store build has one-click install and automatic updates. GitHub/community builds require downloading releases, loading unpacked builds, or installing scripts yourself.'],
-          ['Pro activation', 'Pro subscriptions target the official Chrome extension with License activation and status validation. Self-built versions can be audited and modified, but they do not include official License service support.'],
-          ['Support scope', 'The official build includes maintainer support and ongoing releases. Community builds are provided under the MIT license as self-built paths, suitable for auditing, forks, and PRs.'],
-          ['Script builds', 'Tampermonkey and Safari UserScripts are free lightweight paths focused on velocity badges and mobile availability, not the full Chrome extension.'],
+          ['Official extension', 'Recommended for daily use: one-click install, auto-updates, Pro activation, and maintainer support.'],
+          ['Tampermonkey script', 'Free and lightweight, for desktop users who only need velocity badges and the current-page hot list.'],
+          ['Safari UserScripts', 'A mobile fallback that keeps badges and tones down the floating hot list for small screens.'],
+          ['Source code', 'MIT licensed. Read the source, file issues, or send PRs on GitHub.'],
         ],
+        communityLinks: ['Desktop script', 'Mobile script', 'View source'],
         featureTitle: 'Core features',
         features: [
-          ['Velocity badges', 'Show views/hour beside each tweet to see whether a post is gaining speed.'],
-          ['Page hot list', 'Sort visible tweets by velocity in a floating panel and jump back to the source post.'],
-          ['Long-image reading', 'Zoom, pan, and read long screenshots vertically inside the native X lightbox.'],
-          ['Content filtering', 'Local rules hide spam, adult funnels, and Telegram bait; rules can update remotely.'],
+          ['Velocity badges', 'Show views/hour beside each tweet. When the badge turns into a 🚀 rocket, the post is starting to take off and deserves attention.'],
+          ['Floating hot-post panel', 'Collect high-velocity posts from the current page, so you can catch warming topics without endlessly refreshing the timeline.'],
+          ['Creator growth assist', 'Find high-traffic posts earlier, leave thoughtful comments in the right place, and enter more active conversations.'],
+          ['Reading and content upgrades', 'Long-image reading, image upgrades, content filtering, and Grok reply help reduce friction while browsing X.'],
         ],
         privacyTitle: 'Privacy boundary',
-        privacyLead: 'The extension reads data from x.com / pro.x.com pages you visit and X responses already loaded by your browser. Processing happens locally, with no analytics SDK and no tracking pixels.',
-        footer: 'MIT Licensed. Built for X power users.',
+        privacyLead: 'The extension works only on X pages you open. Processing stays local where possible, with no analytics SDK and no tracking pixels.',
+        footer: 'MIT Licensed. Community builds are available from GitHub.',
       },
       ja: {
         lang: 'ja',
-        title: 'X Viral Monitor - X 投稿流速モニター',
-        description: 'X Viral Monitor は X のタイムラインに流速バッジ、注目投稿リスト、長尺画像閲覧、コンテンツフィルター、Pro 流速フィルターを追加します。Chrome 拡張、Tampermonkey、iOS Safari UserScripts に対応。',
-        nav: ['インストール', 'Pro', '版の違い', 'プライバシー', 'GitHub'],
+        title: 'X Viral Monitor - X クリエイター向け流速バッジと注目投稿モニター',
+        ogLocale: 'ja_JP',
+        description: 'X Viral Monitor は X のタイムラインに流速バッジと注目投稿パネルを追加し、伸び始めた投稿を早く見つけて会話に参加しやすくします。',
+        nav: ['インストール', '機能', 'Pro', 'プライバシー', 'コミュニティ'],
         kicker: 'X timeline intelligence',
         heroTitle: 'X Viral Monitor',
-        heroLead: 'X のタイムライン上で投稿の流速、バズ指数、ページ内の注目投稿を確認できます。公式 Chrome 版は Pro サブスクに対応し、GitHub 版と userscript 版はオープンソースで自分でビルドできます。',
-        heroCtas: ['Chrome 拡張を入れる', 'インストール方法を見る', 'ソースを見る'],
-        installTitle: '3 つのインストール方法',
-        installLead: 'デスクトップ Chrome では公式拡張がおすすめです。バッジとランキングだけなら Tampermonkey、iPhone / iPad では Safari UserScripts 版を使えます。',
+        heroLead: '投稿が伸び切る前に、先に気づく。X Viral Monitor は流速バッジと注目投稿パネルで、高流量の投稿を早く見つけ、よいコメントで会話に入りやすくします。',
+        heroCtas: ['Chrome 拡張を入れる', '主な機能を見る', 'Pro を見る'],
+        installTitle: '公式 Chrome 拡張をインストール',
+        installLead: 'Chrome Web Store から入れるのがおすすめです。完全な機能、自動更新、今後の Pro 有効化に対応します。',
         installCards: [
-          ['おすすめ', 'Chrome / Edge 拡張', '流速バッジ、注目リスト、コンテンツフィルター、長尺画像閲覧、Grok 返信補助、Pro 流速フィルターを含む完全版です。', ['Chrome Web Store ページを開く', 'Chrome に追加をクリック', 'X ページ右上から設定を開く'], 'ストアからインストール'],
-          ['無料スクリプト', 'Tampermonkey userscript', '流速バッジと現在ページのランキングだけを使いたい人向けの軽量デスクトップ版です。', ['Tampermonkey または Violentmonkey を入れる', 'raw スクリプト URL を開く', 'スクリプト管理画面で確認'], 'デスクトップ版を入れる'],
-          ['iOS Safari', 'Safari UserScripts', 'モバイル版は DOM fallback を使い、小画面向けにバッジを残してフローティングランキングを既定でオフにします。', ['Userscripts App を入れる', 'Safari 拡張設定で有効化', 'モバイル版スクリプトを読み込む'], 'モバイル版を入れる'],
+          ['おすすめ', 'Chrome / Edge 拡張', '流速バッジ、注目投稿パネル、長尺画像閲覧、コンテンツフィルター、Grok 返信補助を X に追加します。', [], 'ストアからインストール'],
         ],
         proTitle: 'Pro サブスクリプション',
-        proLead: 'X Viral Monitor の日常的な機能の多くは無料で使えます。Pro は一部の高度な追加機能向けで、現在は主に流速フィルターを対象にしています。対象範囲が変わる場合は、このページで最新情報を案内します。',
+        proLead: '日常的な機能は無料で使えます。Pro は現在、主に高度な流速フィルター向けです。',
         priceMainTitle: '現在の価格',
-        priceMainText: '購入後、Chrome 拡張の Pro タブで License Key を有効化します。最終価格は決済ページの表示に従います。',
-        priceMonthly: ['月額サブスク', '短期間の試用や一時的な監視に向いています。', '月額で購入'],
-        priceAnnual: ['年額サブスク、約 17% お得', '長期的に X タイムラインを監視する人向けです。', '年額で購入'],
+        priceMainText: '購入後、Chrome 拡張の Pro タブで License Key を有効化します。最終価格は決済ページで確認できます。',
+        priceMonthly: ['月額サブスク', '短期間の試用向けです。', '月額で購入'],
+        priceAnnual: ['年額サブスク、約 17% お得', '長く使う人向けです。', '年額で購入'],
         freeTitle: 'ほとんどの機能は無料',
-        freeText1: '流速バッジ、ページ内注目リスト、ブックマーク数表示、画像ビューア強化、長尺画像閲覧、コンテンツフィルター、Markdown コピー、Thank-You Star Chart、Grok 返信補助などの日常機能は無料で使えます。',
-        freeText2: 'Pro License は公式 Chrome 拡張内の Pro 機能にのみ適用されます。クライアントソースは公開され、課金部分は主に公式ビルド、自動更新、License サービス、サポート、継続保守を対象にしています。',
-        versionsTitle: '公式版 vs GitHub コミュニティ版',
-        versionsLead: '同じコードベースを MIT ライセンスで公開しています。Chrome Web Store は公式配布、GitHub ビルド、手動読み込み、userscript、Safari UserScripts はコミュニティ / 自己ビルドの経路です。',
+        freeText1: '流速バッジ、ページ内注目リスト、ブックマーク数、画像強化、長尺画像閲覧、コンテンツフィルター、Markdown コピー、Thank-You Star Chart、Grok 返信補助は Pro なしで使えます。',
+        freeText2: 'Pro License は公式 Chrome 拡張内の Pro 機能にのみ適用されます。ソースは公開され、課金部分は主に公式ビルド、自動更新、License サービス、継続保守を対象にしています。',
+        versionsTitle: 'コミュニティ版の補足',
+        versionsLead: '普段使いには公式 Chrome 拡張をおすすめします。ソース確認、自分でのビルド、軽量 userscript が必要な場合のみ、下のコミュニティ経路を使えます。',
         matrix: [
-          ['インストールと更新', 'Chrome Web Store 公式版はワンクリックインストールと自動更新に対応します。GitHub 版は Release のダウンロード、展開版読み込み、またはスクリプト導入が必要です。'],
-          ['Pro 有効化', 'Pro サブスクは公式 Chrome 拡張向けで、License の有効化と状態確認に対応します。自己ビルド版は監査と改変ができますが、公式 License サービスのサポートは含まれません。'],
-          ['サポート範囲', '公式版には保守サポートと継続リリースが含まれます。コミュニティ版は MIT ライセンスに基づく自己ビルド経路で、監査、fork、PR に向いています。'],
-          ['スクリプト版', 'Tampermonkey と Safari UserScripts は無料の軽量経路で、流速バッジとモバイル利用性に重点を置き、完全な Chrome 拡張とは異なります。'],
+          ['公式拡張', '普段使い向け：ワンクリックインストール、自動更新、Pro 有効化、メンテナーサポートに対応します。'],
+          ['Tampermonkey スクリプト', '無料の軽量版です。流速バッジと現在ページの注目リストだけを使いたいデスクトップユーザー向けです。'],
+          ['Safari UserScripts', 'モバイル向けの補助経路です。バッジを残し、小画面向けに浮動パネルを控えめにします。'],
+          ['ソースコード', 'MIT ライセンスで公開しています。GitHub でソース確認、issue 作成、PR 送信ができます。'],
         ],
+        communityLinks: ['デスクトップ脚本', 'モバイル脚本', 'ソースを見る'],
         featureTitle: '主な機能',
         features: [
-          ['流速バッジ', '各投稿の横に views/hour を表示し、伸びている投稿をすぐ判別できます。'],
-          ['ページ内注目リスト', '現在見えている投稿を流速順に並べ、元投稿へすぐ戻れます。'],
-          ['長尺画像閲覧', 'X のライトボックス内でズーム、パン、長いスクリーンショットの縦読みができます。'],
-          ['コンテンツフィルター', 'ローカルルールで spam、成人向け誘導、Telegram 誘導を隠し、ルールはリモート更新できます。'],
+          ['流速バッジ', '各投稿の横に views/hour を表示します。🚀 ロケット表示になった投稿は、伸び始めていて重点的に見る価値があります。'],
+          ['注目投稿パネル', '現在ページの高流速投稿をまとめ、タイムラインを何度も更新しなくても温まり始めた話題を追えます。'],
+          ['X クリエイターの成長補助', '高流量の投稿を早く見つけ、適切な場所で有益なコメントを残し、活発な会話に入りやすくします。'],
+          ['閲覧と投稿補助', '長尺画像閲覧、画像強化、コンテンツフィルター、Grok 返信補助で、X 利用時の手間を減らします。'],
         ],
         privacyTitle: 'プライバシー境界',
-        privacyLead: '拡張は閲覧中の x.com / pro.x.com ページと、ブラウザがすでに読み込んだ X のレスポンスからデータを読みます。処理はローカルで行われ、分析 SDK やトラッキングピクセルは入れていません。',
-        footer: 'MIT Licensed. Built for X power users.',
+        privacyLead: '拡張は開いている X ページ上でのみ動作します。可能な限りローカルで処理し、分析 SDK やトラッキングピクセルは入れていません。',
+        footer: 'MIT Licensed. コミュニティ版は GitHub から利用できます。',
       },
     };
 
@@ -903,9 +1006,16 @@
       const t = siteI18n[lang] || siteI18n.zh;
       document.documentElement.lang = t.lang;
       document.title = t.title;
+      const canonicalBase = 'https://icy-cat.github.io/x-viral-monitor/';
+      const canonicalUrl = lang === 'zh' ? canonicalBase : `${canonicalBase}?lang=${lang}`;
+      $('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
       $('meta[name="description"]')?.setAttribute('content', t.description);
-      $('meta[property="og:title"]')?.setAttribute('content', t.heroTitle);
+      $('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
+      $('meta[property="og:title"]')?.setAttribute('content', t.title);
       $('meta[property="og:description"]')?.setAttribute('content', t.description);
+      $('meta[property="og:locale"]')?.setAttribute('content', t.ogLocale);
+      $('meta[name="twitter:title"]')?.setAttribute('content', t.title);
+      $('meta[name="twitter:description"]')?.setAttribute('content', t.description);
       list('.nav-links a', t.nav);
       text('.hero .kicker', t.kicker);
       text('.hero h1', t.heroTitle);
@@ -943,7 +1053,8 @@
         row.querySelector('th').textContent = t.matrix[i][0];
         row.querySelector('td').textContent = t.matrix[i][1];
       });
-      const featureSection = $('section:nth-of-type(4)');
+      list('#versions .community-links .btn', t.communityLinks);
+      const featureSection = $('#features');
       featureSection.querySelector('h2').textContent = t.featureTitle;
       featureSection.querySelectorAll('.feature-card').forEach((card, i) => {
         card.querySelector('strong').textContent = t.features[i][0];
@@ -959,6 +1070,8 @@
     }
 
     function detectSiteLanguage() {
+      const requested = new URLSearchParams(location.search).get('lang');
+      if (siteI18n[requested]) return requested;
       try {
         const saved = localStorage.getItem('xvm-site-lang');
         if (siteI18n[saved]) return saved;

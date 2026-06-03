@@ -56,6 +56,7 @@
   const RATE_FILTER_KEY = 'xvm_rate_filter_v1';
   const CONTENT_FILTER_KEY = 'xvm_content_filter_v1';
   const CONTENT_FILTER_RULES_KEY = 'xvm_content_filter_rules_remote_v1';
+  const REVALIDATE_RETRY_MS = 5 * 60 * 1000;
 
   // Remote rules: fetched from the repo's canonical rules.json so we can
   // ship new filter heuristics without rebuilding the extension. Cached in
@@ -248,6 +249,12 @@
     pushTier();
   }
 
+  function shouldRevalidate(info, stored) {
+    if (!stored?.key || !stored?.instanceId) return false;
+    if (!['offline-grace', 'invalid_entitlement', 'missing_product'].includes(info?.source)) return false;
+    return Date.now() - (stored.lastTriedAt || 0) > REVALIDATE_RETRY_MS;
+  }
+
   // ─── License status + tier resolver ─────────────────────────────────
   // Pure logic lives in tier-logic.js. We only do storage I/O + the
   // side-effecting background revalidate.
@@ -256,7 +263,7 @@
     const status = licenseStatusFrom(stored, Date.now());
     // Stale-cache side-effect: kick off background revalidate. The pure
     // helper just reports the verdict; we own the I/O.
-    if ((status.source === 'offline-grace' || status.source === 'invalid_entitlement' || status.source === 'missing_product') && stored) {
+    if (shouldRevalidate(status, stored)) {
       revalidateInBackground(stored).catch(() => {});
     }
     return status;
@@ -267,7 +274,7 @@
     const trial = await safeStorageGet(TRIAL_KEY, null);
     const r = resolveTierFrom(stored, trial, Date.now());
     // Side-effect: if the verdict served from offline-grace, kick revalidate.
-    if ((r.source === 'offline-grace' || r.source === 'invalid_entitlement' || r.source === 'missing_product') && stored) {
+    if (shouldRevalidate(r, stored)) {
       revalidateInBackground(stored).catch(() => {});
     }
     return r;

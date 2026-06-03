@@ -1,10 +1,4 @@
-// AUTO-GENERATED from bootstrap-rules.json by scripts/sync-rules.mjs — do not edit.
-//
-// Minimal bootstrap fallback for the MAIN-world content filter. Remote
-// rules fetched by isolated.js override this at runtime via
-// XVM_CONTENT_FILTER_RULES_UPDATE.
-(function () {
-  window.__xvmContentFilterBuiltinRules = {
+{
   "version": 1,
   "levels": {
     "light": [
@@ -53,5 +47,4 @@
       "severity": "high"
     }
   ]
-};
-})();
+}

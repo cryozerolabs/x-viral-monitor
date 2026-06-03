@@ -128,6 +128,24 @@
   "contentLeaderboardEdgeShow": {
     "message": "展開"
   },
+  "contentLeaderboardSettings": {
+    "message": "注目投稿リストの設定を開く"
+  },
+  "contentLeaderboardClose": {
+    "message": "注目投稿リストを閉じる"
+  },
+  "contentLeaderboardCloseSettings": {
+    "message": "設定を閉じる"
+  },
+  "contentLeaderboardSettingsPanelTitle": {
+    "message": "注目投稿リスト設定"
+  },
+  "contentLeaderboardColumns": {
+    "message": "表示する列"
+  },
+  "contentLeaderboardSettingsAutoSave": {
+    "message": "変更は自動保存され、このページにすぐ反映されます。"
+  },
   "contentLeaderboardTotalViews": {
     "message": "総表示回数"
   },
@@ -382,8 +400,6 @@
   "proBannerTrialOne":   { "message": "トライアル — 残り 1 日" },
   "proNudgeTrialEnd":    { "message": "トライアル残り $DAYS$ 日 — Pro にアップグレードしてフィルタを継続。", "placeholders": { "DAYS": { "content": "$1" } } },
   "proNudgeTrialEndOne": { "message": "トライアル残り 1 日 — Pro にアップグレードしてフィルタを継続。" },
-  "proCtaMonthly":       { "message": "月額 · $$2.9 / 月" },
-  "proCtaAnnual":        { "message": "年額 · $$29 / 年 (17% お得)" },
   "proActivateLabel":    { "message": "購入済みですか? ライセンスキーを入力:" },
   "proActivatePlaceholder": { "message": "creem-XXXXX..." },
   "proActivateBtn":      { "message": "有効化" },
@@ -430,8 +446,6 @@
   "communityDevBadge": { "message": "Community DEV Build" },
   "communityDevSub":   { "message": "ローカルの Pro 機能はすべて有効です。公式ライセンスサービスと自動更新は Chrome Web Store 版向けです。" },
   "heroFreeTagline":   { "message": "ほとんどの機能は無料で、一部の高度な機能だけが Pro です。" },
-  "heroCtaUpgradeAnnual":  { "message": "Pro の詳細をサイトで確認" },
-  "heroCtaUpgradeMonthly": { "message": "価格と対象範囲はサイトで案内します" },
   "heroActivateExistingLink": { "message": "既存ライセンスを有効化" },
   "proScopeTitle":     { "message": "Pro とは" },
   "proScopeBody":      { "message": "Pro は一部の高度な追加機能向けです。現在は主に流速フィルターを有効化します。対象範囲はバージョンで変わる可能性があるため、最新情報は公式サイトを確認してください。" },
@@ -493,8 +507,8 @@
   "contentLbHotOnly":      { "message": "ホットのみ" },
   "contentLbHotProTitle":  { "message": "流速フィルターは Pro 機能" },
   "contentLbHotProSub":    { "message": "低表示数の投稿を非表示にし、実際に拡散している投稿だけ残す" },
-  "contentLbHotMonthly":   { "message": "月額 $$2.9/月" },
-  "contentLbHotAnnual":    { "message": "年額 $$29/年 (17% お得)" },
+  "contentLbHotDetails":   { "message": "Pro の対象範囲を見る" },
+  "contentLbHotOpenSite":  { "message": "公式サイトを開く" },
   "cfTitle":        { "message": "コンテンツフィルター" },
   "cfLockedHint":   { "message": "コンテンツフィルターは無料で使えます。ここで有効化できます。" },
   "cfEnabled":      { "message": "成人向け / 広告 / 誘導返信を隠す" },

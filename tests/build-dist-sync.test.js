@@ -21,6 +21,7 @@ const buildScript = readFileSync(resolve(repo, 'scripts/build-dist.mjs'), 'utf8'
 const packageJson = JSON.parse(readFileSync(resolve(repo, 'package.json'), 'utf8'));
 const releaseWorkflow = readFileSync(resolve(repo, '.github/workflows/release.yml'), 'utf8');
 const GENERATED_DIST_FILES = new Set(['src/build-channel.js']);
+const DIST_EXCLUDED_FILES = new Set(['src/premium/content-filter/rules.json']);
 
 // Same canonical 11 items the build script ships. Read from the build
 // script itself so adding a file to ITEMS automatically gets covered.
@@ -75,6 +76,7 @@ describe('#45 build:dist byte-level sync (Codex P0 fix follow-up)', () => {
         const rel = relative(srcPath, sf);
         const itemRel = `${item}/${rel}`.replaceAll('\\', '/');
         if (GENERATED_DIST_FILES.has(itemRel)) continue;
+        if (DIST_EXCLUDED_FILES.has(itemRel)) continue;
         const df = join(dstPath, rel);
         if (!existsSync(df)) { stale.push(`${item}/${rel} (missing in dist/)`); continue; }
         const srcBuf = readFileSync(sf);

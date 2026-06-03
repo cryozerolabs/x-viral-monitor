@@ -10,19 +10,31 @@ let velocityThresholds = { ...DEFAULT_THRESHOLDS };
 let localizedStrings = {};
 function i18n(key) { return localizedStrings[key] || key; }
 function i18nOr(key, fallback) { return localizedStrings[key] || fallback; }
+const PRODUCT_SITE_PRO_URL = 'https://icy-cat.github.io/x-viral-monitor/#pro';
 
 function applyLocalizedUi() {
   if (!leaderboardEl) return;
   const head = leaderboardEl.querySelector('.xvm-lb-head');
   const title = leaderboardEl.querySelector('.xvm-lb-title');
   const back = leaderboardEl.querySelector('.xvm-lb-back');
+  const settings = leaderboardEl.querySelector('.xvm-lb-settings');
+  const close = leaderboardEl.querySelector('.xvm-lb-close');
   if (head) head.title = i18n('contentLeaderboardDragToMove');
   if (title) title.textContent = `🔥 ${i18n('contentLeaderboardTitle')}`;
   if (back) {
     back.title = i18n('contentLeaderboardBackToPrevious');
     back.setAttribute('aria-label', i18n('contentLeaderboardBackToPrevious'));
   }
+  if (settings) {
+    settings.title = i18n('contentLeaderboardSettings');
+    settings.setAttribute('aria-label', i18n('contentLeaderboardSettings'));
+  }
+  if (close) {
+    close.title = i18n('contentLeaderboardClose');
+    close.setAttribute('aria-label', i18n('contentLeaderboardClose'));
+  }
   setLeaderboardEdgeToggleState();
+  updateLeaderboardSettingsPanel();
 }
 
 function normalizeThresholds(raw) {
@@ -48,6 +60,14 @@ const DEFAULT_LB_COLUMNS = [
   { id: 'views',    visible: true  },
   { id: 'velocity', visible: true  },
 ];
+const LB_COLUMN_LABEL_KEYS = {
+  rank: 'popupColRank',
+  icon: 'popupColIcon',
+  handle: 'popupColHandle',
+  preview: 'popupColPreview',
+  views: 'popupColViews',
+  velocity: 'popupColVelocity',
+};
 let leaderboardColumns = DEFAULT_LB_COLUMNS.map((c) => ({ ...c }));
 let badgeStyle = 'pill-solid';
 let copyAsMarkdownEnabled = true;
@@ -1008,6 +1028,7 @@ document.addEventListener('click', (e) => {
 
 // === Velocity Leaderboard ===
 let leaderboardEl = null;
+let leaderboardSettingsEl = null;
 let leaderboardRaf = 0;
 const leaderboardItemMeta = new Map();
 let pendingLeaderboardJump = null;
@@ -1040,32 +1061,22 @@ function ensureLeaderboard() {
     <div class="xvm-lb-resize" aria-hidden="true"></div>
     <div class="xvm-lb-resize-v" aria-hidden="true"></div>
   `;
-  // v1.7.0 #4 — "Hot only" Pro-feature toggle in the leaderboard head.
-  // Visual: shadcn pill switch (44×24) matching the popup Filter
-  // toggle for cross-surface consistency. Tier-aware click handler
-  // (free → bubble; trial/pro → flip filter enable).
-  const hot = document.createElement('label');
-  hot.className = 'xvm-lb-hot';
-  hot.dataset.on = '0';
-  hot.dataset.tier = 'free';
-  hot.innerHTML = `
-    <span class="xvm-lb-hot-label"></span>
-    <span class="xvm-lb-pro-badge">Pro</span>
-    <span class="xvm-lb-hot-switch">
-      <input type="checkbox" />
-      <span class="xvm-lb-hot-slider"></span>
-    </span>
-  `;
-  hot.querySelector('.xvm-lb-hot-label').textContent = i18n('contentLbHotOnly') || '仅看热帖';
   const controls = document.createElement('div');
   controls.className = 'xvm-lb-controls';
-  controls.append(hot);
+  controls.insertAdjacentHTML('beforeend', `
+    <button class="xvm-lb-action xvm-lb-settings" type="button" title="${i18nOr('contentLeaderboardSettings', '设置')}" aria-label="${i18nOr('contentLeaderboardSettings', '设置')}">
+      <svg class="lucide lucide-settings-icon lucide-settings" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
+    <button class="xvm-lb-action xvm-lb-close" type="button" title="${i18nOr('contentLeaderboardClose', '关闭热度榜')}" aria-label="${i18nOr('contentLeaderboardClose', '关闭热度榜')}">
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M5 5l10 10M15 5L5 15"></path>
+      </svg>
+    </button>
+  `);
   leaderboardEl.querySelector('.xvm-lb-head').appendChild(controls);
-  // The checkbox 'click' fires when the user clicks anywhere on the label.
-  // We listen on the input directly so we can preventDefault for free
-  // users (don't visually flip the switch — bubble instead).
-  hot.addEventListener('click', onHotGateClick);
-  hot.querySelector('input').addEventListener('click', onHotToggleClick);
 
   document.body.appendChild(leaderboardEl);
   applyLeaderboardWidth();
@@ -1076,6 +1087,7 @@ function ensureLeaderboard() {
   installLeaderboardResize();
   installLeaderboardResizeHeight();
   installLeaderboardEdgeToggle();
+  installLeaderboardPanelActions();
   updateLeaderboardEdgeHideUi();
   installLeaderboardBackButton();
   // v1.7.0 #2 — sync leaderboard theme + tier with popup.
@@ -1094,6 +1106,7 @@ function applyLeaderboardTheme(resolved) {
   if (!leaderboardEl) return;
   const r = resolved || _resolvedTheme(_themePref);
   leaderboardEl.setAttribute('data-theme', r);
+  if (leaderboardSettingsEl) leaderboardSettingsEl.setAttribute('data-theme', r);
 }
 let _themePref = 'system';
 function _resolvedTheme(pref) {
@@ -1124,11 +1137,10 @@ function installLeaderboardThemeSync() {
 // ── Leaderboard tier sync (v1.7.0 #4 — hot-only toggle behavior) ──────────
 function installLeaderboardTierSync() {
   function refreshTier() {
-    if (!leaderboardEl) return;
-    const tier = window.__xvmPro?.getCurrentTier?.() || 'free';
-    const hot = leaderboardEl.querySelector('.xvm-lb-hot');
+    leaderboardTier = window.__xvmPro?.getCurrentTier?.() || 'free';
+    const hot = getLeaderboardHotToggle();
     if (hot) {
-      hot.dataset.tier = tier;
+      hot.dataset.tier = leaderboardTier;
       setLeaderboardHotSwitchState();
     }
   }
@@ -1157,6 +1169,7 @@ function scopeFromPath(pathname = window.location.pathname) {
 }
 const SCOPE_KEY_FOR = { home: 'scopeHome', list: 'scopeList', profile: 'scopeProfile', status: 'scopeStatus' };
 let _rateFilterScopes = { scopeHome: false, scopeList: false, scopeProfile: false, scopeStatus: false };
+let leaderboardTier = 'free';
 // Three signals feed into the leaderboard's current scope:
 //   1. _activeScope: pushed by rate-filter on each GraphQL response
 //      (authoritative for the first visit to a tab, but stale on
@@ -1208,10 +1221,13 @@ function currentScopeEnabled() {
   if (!scope) return false;
   return !!_rateFilterScopes[SCOPE_KEY_FOR[scope]];
 }
+function getLeaderboardHotToggle() {
+  return leaderboardSettingsEl?.querySelector?.('.xvm-lb-hot') || leaderboardEl?.querySelector?.('.xvm-lb-hot');
+}
 function setLeaderboardHotSwitchState() {
-  const hot = leaderboardEl?.querySelector('.xvm-lb-hot');
+  const hot = getLeaderboardHotToggle();
   if (!hot) return;
-  const tier = hot.dataset.tier || 'free';
+  const tier = leaderboardTier || hot.dataset.tier || 'free';
   const scope = currentLeaderboardScope();
   const supportedHere = !!scope;
   const on = tier !== 'free' && supportedHere && currentScopeEnabled();
@@ -1339,7 +1355,7 @@ function installLeaderboardFilterStateSync() {
 }
 
 function onHotGateClick(ev) {
-  const hot = leaderboardEl?.querySelector('.xvm-lb-hot');
+  const hot = getLeaderboardHotToggle();
   if (!hot) return;
   const tier = hot.dataset.tier || 'free';
   if (tier === 'free') {
@@ -1350,7 +1366,7 @@ function onHotGateClick(ev) {
 }
 
 function onHotToggleClick(ev) {
-  const hot = leaderboardEl?.querySelector('.xvm-lb-hot');
+  const hot = getLeaderboardHotToggle();
   if (!hot) return;
   const tier = hot.dataset.tier || 'free';
   const scope = currentLeaderboardScope();
@@ -1392,11 +1408,11 @@ function showLeaderboardUpgradeBubble() {
   bubble.querySelector('.xvm-lb-upgrade-title span').textContent = i18n('contentLbHotProTitle') || '流速过滤是 Pro 功能';
   bubble.querySelector('.xvm-lb-upgrade-sub').textContent = i18n('contentLbHotProSub') || '隐藏低浏览量推文,保留真正在传播的内容';
   const link = bubble.querySelector('.xvm-lb-upgrade-link');
-  link.textContent = i18n('contentLbHotMonthly') || '月度 $2.9';
-  link.href = 'https://www.creem.io/payment/prod_7f7t9EHK3RJlOK37DWr7J';
+  link.textContent = i18n('contentLbHotDetails') || '查看 Pro 范围';
+  link.href = PRODUCT_SITE_PRO_URL;
   const btn = bubble.querySelector('.xvm-lb-upgrade-btn');
-  btn.textContent = i18n('contentLbHotAnnual') || '年度 $29 (省 17%)';
-  btn.href = 'https://www.creem.io/payment/prod_69yTiXGXb04DKm46DNVbN9';
+  btn.textContent = i18n('contentLbHotOpenSite') || '去官网开通';
+  btn.href = PRODUCT_SITE_PRO_URL;
   bubble.querySelector('.xvm-lb-upgrade-close').addEventListener('click', () => bubble.remove());
   const head = leaderboardEl.querySelector('.xvm-lb-head');
   head.insertAdjacentElement('afterend', bubble);
@@ -1489,6 +1505,7 @@ function setLeaderboardEdgeHidden(hidden, edge = 'right') {
     return;
   }
   if (nextEdge) {
+    hideLeaderboardSettingsPanel();
     const rect = leaderboardEl.getBoundingClientRect();
     leaderboardExpandedPos = {
       left: clampToViewport(rect.left, 'x'),
@@ -1658,6 +1675,7 @@ function installLeaderboardDrag() {
     leaderboardEl.style.right = 'auto';
     leaderboardPos = { left, top };
     leaderboardExpandedPos = { left, top };
+    positionLeaderboardSettingsPanel();
     pendingSnapEdge = getPointerSnapEdge(pendingClientX, pendingClientY)
       || getLeaderboardSnapEdge({
         left,
@@ -1883,11 +1901,216 @@ function installLeaderboardEdgeToggle() {
   }, true);
 }
 
+function installLeaderboardPanelActions() {
+  if (!leaderboardEl) return;
+  const settings = leaderboardEl.querySelector('.xvm-lb-settings');
+  const close = leaderboardEl.querySelector('.xvm-lb-close');
+  settings?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleLeaderboardSettingsPanel();
+  });
+  close?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    leaderboardEnabled = false;
+    hideLeaderboard();
+    window.postMessage({ type: 'XVM_LEADERBOARD_DISABLE' }, '*');
+  });
+}
+
+function normalizeLeaderboardCountInput(v) {
+  const n = Number.parseInt(v, 10);
+  if (!Number.isFinite(n)) return 10;
+  return Math.max(1, Math.min(50, n));
+}
+
+function leaderboardColumnLabel(id) {
+  return i18nOr(LB_COLUMN_LABEL_KEYS[id], id);
+}
+
+function saveLeaderboardSettingsPatch(patch) {
+  window.postMessage({ type: 'XVM_LEADERBOARD_SETTINGS_SAVE', patch }, '*');
+}
+
+function ensureLeaderboardSettingsPanel() {
+  if (leaderboardSettingsEl) return leaderboardSettingsEl;
+  leaderboardSettingsEl = document.createElement('div');
+  leaderboardSettingsEl.className = 'xvm-lb-settings-panel';
+  leaderboardSettingsEl.hidden = true;
+  leaderboardSettingsEl.innerHTML = `
+    <div class="xvm-lb-settings-head">
+      <strong class="xvm-lb-settings-title"></strong>
+      <button class="xvm-lb-settings-close" type="button" aria-label="${i18nOr('contentLeaderboardCloseSettings', '关闭设置')}">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 5l10 10M15 5L5 15"></path>
+        </svg>
+      </button>
+    </div>
+    <label class="xvm-lb-settings-row">
+      <span class="xvm-lb-settings-label" data-role="count-label"></span>
+      <input class="xvm-lb-settings-count" type="number" min="1" max="50" step="1">
+    </label>
+    <div class="xvm-lb-settings-toggle xvm-lb-settings-hot-row">
+      <span>
+        <b data-role="hot-title"></b>
+        <small data-role="hot-desc"></small>
+      </span>
+      <label class="xvm-lb-hot" data-on="0" data-tier="free">
+        <span class="xvm-lb-pro-badge">Pro</span>
+        <span class="xvm-lb-hot-switch">
+          <input type="checkbox" />
+          <span class="xvm-lb-hot-slider"></span>
+        </span>
+      </label>
+    </div>
+    <label class="xvm-lb-settings-toggle">
+      <span>
+        <b data-role="edge-title"></b>
+        <small data-role="edge-desc"></small>
+      </span>
+      <input class="xvm-lb-settings-edge" type="checkbox">
+    </label>
+    <div class="xvm-lb-settings-section">
+      <div class="xvm-lb-settings-section-title" data-role="columns-title"></div>
+      <div class="xvm-lb-settings-cols"></div>
+    </div>
+    <p class="xvm-lb-settings-hint" data-role="hint"></p>
+  `;
+  document.body.appendChild(leaderboardSettingsEl);
+
+  leaderboardSettingsEl.querySelector('.xvm-lb-settings-close')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hideLeaderboardSettingsPanel();
+  });
+  const hot = leaderboardSettingsEl.querySelector('.xvm-lb-hot');
+  hot?.addEventListener('click', onHotGateClick);
+  hot?.querySelector('input')?.addEventListener('click', onHotToggleClick);
+  leaderboardSettingsEl.querySelector('.xvm-lb-settings-count')?.addEventListener('change', (e) => {
+    const n = normalizeLeaderboardCountInput(e.target.value);
+    e.target.value = String(n);
+    leaderboardCount = n;
+    renderLeaderboard();
+    saveLeaderboardSettingsPatch({ leaderboardCount: n });
+  });
+  leaderboardSettingsEl.querySelector('.xvm-lb-settings-edge')?.addEventListener('change', (e) => {
+    leaderboardEdgeHideEnabled = !!e.target.checked;
+    updateLeaderboardEdgeHideUi();
+    saveLeaderboardSettingsPatch({ leaderboardEdgeHideEnabled });
+  });
+  leaderboardSettingsEl.addEventListener('change', (e) => {
+    const input = e.target?.closest?.('.xvm-lb-settings-col input[type="checkbox"]');
+    if (!input) return;
+    const id = input.dataset.colId;
+    if (!id) return;
+    const visibleCount = leaderboardColumns.filter((c) => c.visible).length;
+    if (!input.checked && visibleCount <= 1) {
+      input.checked = true;
+      return;
+    }
+    leaderboardColumns = leaderboardColumns.map((c) => (
+      c.id === id ? { ...c, visible: !!input.checked } : c
+    ));
+    updateLeaderboardSettingsPanel();
+    renderLeaderboard();
+    saveLeaderboardSettingsPatch({ leaderboardColumns });
+  });
+  return leaderboardSettingsEl;
+}
+
+function updateLeaderboardSettingsPanel() {
+  if (!leaderboardSettingsEl) return;
+  leaderboardSettingsEl.setAttribute('data-theme', _resolvedTheme(_themePref));
+  const title = leaderboardSettingsEl.querySelector('.xvm-lb-settings-title');
+  const countLabel = leaderboardSettingsEl.querySelector('[data-role="count-label"]');
+  const countInput = leaderboardSettingsEl.querySelector('.xvm-lb-settings-count');
+  const hotTitle = leaderboardSettingsEl.querySelector('[data-role="hot-title"]');
+  const hotDesc = leaderboardSettingsEl.querySelector('[data-role="hot-desc"]');
+  const edgeTitle = leaderboardSettingsEl.querySelector('[data-role="edge-title"]');
+  const edgeDesc = leaderboardSettingsEl.querySelector('[data-role="edge-desc"]');
+  const edgeInput = leaderboardSettingsEl.querySelector('.xvm-lb-settings-edge');
+  const columnsTitle = leaderboardSettingsEl.querySelector('[data-role="columns-title"]');
+  const cols = leaderboardSettingsEl.querySelector('.xvm-lb-settings-cols');
+  const hint = leaderboardSettingsEl.querySelector('[data-role="hint"]');
+  if (title) title.textContent = i18nOr('contentLeaderboardSettingsPanelTitle', '热度榜设置');
+  if (countLabel) countLabel.textContent = i18nOr('featureLeaderboardShowTop', '显示前 N 条');
+  if (countInput && document.activeElement !== countInput) countInput.value = String(leaderboardCount);
+  if (hotTitle) hotTitle.textContent = i18nOr('contentLbHotOnly', '仅看热帖');
+  if (hotDesc) hotDesc.textContent = i18nOr('contentLbHotProSub', '隐藏低浏览量推文,保留真正在传播的内容');
+  if (edgeTitle) edgeTitle.textContent = i18nOr('featureLeaderboardEdgeHideTitle', '贴边隐藏');
+  if (edgeDesc) edgeDesc.textContent = i18nOr('featureLeaderboardEdgeHideDesc', '拖到屏幕边缘后自动收起');
+  if (edgeInput) edgeInput.checked = leaderboardEdgeHideEnabled !== false;
+  if (columnsTitle) columnsTitle.textContent = i18nOr('contentLeaderboardColumns', '显示列');
+  if (cols) {
+    cols.innerHTML = leaderboardColumns.map((c) => `
+      <label class="xvm-lb-settings-col">
+        <input type="checkbox" data-col-id="${lbEscapeHtml(c.id)}" ${c.visible ? 'checked' : ''}>
+        <span>${lbEscapeHtml(leaderboardColumnLabel(c.id))}</span>
+      </label>
+    `).join('');
+  }
+  if (hint) hint.textContent = i18nOr('contentLeaderboardSettingsAutoSave', '设置会自动保存');
+  setLeaderboardHotSwitchState();
+  positionLeaderboardSettingsPanel();
+}
+
+function positionLeaderboardSettingsPanel() {
+  if (!leaderboardEl || !leaderboardSettingsEl || leaderboardSettingsEl.hidden) return;
+  const rect = leaderboardEl.getBoundingClientRect();
+  const panelRect = leaderboardSettingsEl.getBoundingClientRect();
+  const gap = 8;
+  const panelWidth = panelRect.width || 248;
+  const panelHeight = panelRect.height || 260;
+  let side = 'right';
+  let left = rect.right + gap;
+  let top = Math.max(8, Math.min(rect.top, window.innerHeight - panelHeight - 8));
+  if (left + panelWidth <= window.innerWidth - 8) {
+    side = 'right';
+  } else if (rect.left - panelWidth - gap >= 8) {
+    left = rect.left - panelWidth - gap;
+    side = 'left';
+  } else {
+    side = 'bottom';
+    left = Math.max(8, Math.min(rect.left, window.innerWidth - panelWidth - 8));
+    top = rect.bottom + gap;
+    if (top + panelHeight > window.innerHeight - 8) {
+      side = 'top';
+      top = Math.max(8, rect.top - panelHeight - gap);
+    }
+  }
+  left = Math.max(8, Math.min(left, window.innerWidth - panelWidth - 8));
+  top = Math.max(8, Math.min(top, window.innerHeight - panelHeight - 8));
+  leaderboardSettingsEl.dataset.side = side;
+  leaderboardSettingsEl.style.left = left + 'px';
+  leaderboardSettingsEl.style.top = top + 'px';
+}
+
+function showLeaderboardSettingsPanel() {
+  const panel = ensureLeaderboardSettingsPanel();
+  updateLeaderboardSettingsPanel();
+  panel.hidden = false;
+  panel.classList.add('is-open');
+  positionLeaderboardSettingsPanel();
+}
+
+function hideLeaderboardSettingsPanel() {
+  if (!leaderboardSettingsEl) return;
+  leaderboardSettingsEl.hidden = true;
+  leaderboardSettingsEl.classList.remove('is-open');
+}
+
+function toggleLeaderboardSettingsPanel() {
+  if (leaderboardSettingsEl && !leaderboardSettingsEl.hidden) {
+    hideLeaderboardSettingsPanel();
+  } else {
+    showLeaderboardSettingsPanel();
+  }
+}
+
 window.addEventListener('resize', () => {
   if (!leaderboardEl) return;
   applyLeaderboardWidth();
   applyLeaderboardHeight();
   applyLeaderboardPosition();
+  positionLeaderboardSettingsPanel();
   if (linkState) updateLinkGeometry();
 });
 
@@ -1930,6 +2153,11 @@ const LB_COLUMN_RENDERERS = {
 };
 
 function hideLeaderboard() {
+  if (leaderboardRaf) {
+    cancelAnimationFrame(leaderboardRaf);
+    leaderboardRaf = 0;
+  }
+  hideLeaderboardSettingsPanel();
   if (leaderboardEl) leaderboardEl.style.display = 'none';
   clearLink();
 }
@@ -2090,6 +2318,11 @@ function jumpToLeaderboardTweet(id, itemEl) {
 function renderLeaderboard() {
   cancelAnimationFrame(leaderboardRaf);
   leaderboardRaf = requestAnimationFrame(() => {
+    leaderboardRaf = 0;
+    if (!leaderboardEnabled) {
+      hideLeaderboard();
+      return;
+    }
     const el = ensureLeaderboard();
     const top = collectRanked().slice(0, leaderboardCount);
     const list = el.querySelector('.xvm-lb-list');
