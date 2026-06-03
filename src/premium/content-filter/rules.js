@@ -48,7 +48,6 @@
       "adult-bio-offline-match-high",
       "adult-content-page-funnel-high",
       "adult-bio-medium",
-      "spam-telegram-domain-medium",
       "spam-private-chat-medium",
       "spam-marketing-medium"
     ]
@@ -149,7 +148,7 @@
       "id": "spam-bio-zhongtui-high",
       "type": "regex",
       "field": "bio",
-      "value": "(中推.{0,6}(资源|群|福利|频道|加我|私聊)|中文推特.{0,6}(资源|群|福利|频道|加我|私聊)|telegram|加群|接推广|电报.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
+      "value": "(中推.{0,6}(资源|群|福利|频道|加我|私聊)|中文推特.{0,6}(资源|群|福利|频道|加我|私聊)|加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
       "severity": "high"
     },
     {
@@ -184,7 +183,7 @@
       "id": "spam-content-zhongtui-high",
       "type": "regex",
       "field": "content",
-      "value": "(中推|中文推特|telegram|加群|接推广|电报.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
+      "value": "(中推|中文推特|加群|接推广|电报.{0,12}(频道|群|资源|福利)|telegram.{0,12}(频道|群|资源|福利)|福利(资源|视频|社群|社区|导航|姬|群|频道)|t\\.me.{0,20}资源)",
       "severity": "high"
     },
     {
@@ -192,7 +191,7 @@
       "type": "domain",
       "field": "url",
       "value": "t.me",
-      "severity": "medium"
+      "severity": "low"
     },
     {
       "id": "spam-private-chat-medium",

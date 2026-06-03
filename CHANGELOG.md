@@ -9,6 +9,15 @@ This project follows Keep a Changelog and Semantic Versioning.
 
 ---
 
+## [1.7.14] - 2026-06-03
+
+### Fixed
+
+- Reduced content-filter false positives by no longer hiding replies solely because they contain a `tg` / `t.me` URL.
+- Kept Telegram filtering for high-confidence funnel cases where Telegram links appear together with explicit ad, adult, group, or resource-promotion signals.
+
+---
+
 ## [1.7.13] - 2026-06-01
 
 ### Added
