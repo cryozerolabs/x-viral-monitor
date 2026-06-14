@@ -385,6 +385,27 @@ describe('#123 XVM content filter v1', () => {
     expect(result.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(false);
   });
 
+  it('does not block normal replies from author bio telegram/backoffice wording', () => {
+    const api = loadDebug();
+    api.updateSettings({ enabled: true, level: 'standard', whitelistFollowing: false });
+
+    const normalReplyWithTelegramBio = {
+      id: 'bio-telegram-ok',
+      content: '@sample_user 我就在用这个，我觉得界面很好看',
+      urls: [],
+      author: {
+        handle: 'sample_source',
+        name: 'Sample Source',
+        bio: 'Telegram 备份，记录上门维修和界面设计',
+        location: '',
+      },
+    };
+
+    const result = api._debug.classify(normalReplyWithTelegramBio);
+    expect(result.hide).toBe(false);
+    expect(result.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(false);
+  });
+
   it('covers sample follow-up false negatives without broad resource false positives', () => {
     const api = loadDebug();
     api.updateSettings({ enabled: true, level: 'standard', whitelistFollowing: false });
@@ -426,7 +447,7 @@ describe('#123 XVM content filter v1', () => {
     const sameCityHit = api._debug.classify(sameCity);
     expect(sameCityHit.hide).toBe(true);
     expect(sameCityHit.matches.some((m) => m.id === 'adult-name-offline-high')).toBe(true);
-    expect(sameCityHit.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(true);
+    expect(sameCityHit.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(false);
 
     const clickBigHit = api._debug.classify(clickBig);
     expect(clickBigHit.hide).toBe(true);
@@ -925,7 +946,7 @@ describe('#123 XVM content filter v1', () => {
     api.updateSettings({ enabled: true, level: 'standard', whitelistFollowing: false });
     const classified = api._debug.classify(raw);
     expect(classified.hide).toBe(true);
-    expect(classified.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(true);
+    expect(classified.matches.some((m) => m.id === 'hard-telegram-group-funnel')).toBe(false);
     expect(classified.matches.some((m) => m.id === 'spam-bio-zhongtui-high')).toBe(true);
   });
 
@@ -959,7 +980,7 @@ describe('#123 XVM content filter v1', () => {
     expect(api._debug.rulesSource()).toBe('bundled');
 
     api._debug.updateRulesFromRemote({
-      version: 99,
+      version: 2,
       levels: {
         light: ['remote-test-name-high'],
         standard: ['remote-test-name-high'],
@@ -982,6 +1003,11 @@ describe('#123 XVM content filter v1', () => {
     expect(isolated).toMatch(/XVM_CONTENT_FILTER_RULES_UPDATE/);
     expect(isolated).toMatch(/fetchRemoteContentFilterRules/);
     expect(isolated).toMatch(/pushCachedContentFilterRules/);
+    expect(rulesJson.version).toBe(2);
+    expect(filter).toMatch(/REMOTE_RULES_CURRENT_VERSION\s*=\s*2/);
+    expect(isolated).toMatch(/REMOTE_RULES_CURRENT_VERSION\s*=\s*2/);
+    expect(isolated).toMatch(/p\.version\s*!==\s*REMOTE_RULES_CURRENT_VERSION/);
+    expect(popupFilter).toMatch(/REMOTE_RULES_CURRENT_VERSION\s*=\s*2/);
   });
 
   it('isolated rule validator rejects regex DoS, unknown types, and future schema versions', () => {

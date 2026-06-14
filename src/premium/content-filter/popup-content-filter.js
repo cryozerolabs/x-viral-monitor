@@ -7,6 +7,7 @@
   const STORAGE_KEY = 'xvm_content_filter_v1';
   const RULES_KEY = 'xvm_content_filter_rules_remote_v1';
   const REMOTE_RULES_URL = 'https://raw.githubusercontent.com/Icy-Cat/x-viral-monitor/main/src/premium/content-filter/rules.json';
+  const REMOTE_RULES_CURRENT_VERSION = 2;
   let cachedRemoteRules = null;
   let cachedFetchedAt = 0;
   const DEFAULTS = {
@@ -92,9 +93,16 @@
     return globalThis.__xvmContentFilterBuiltinRules || { levels: { light: [], standard: [], strict: [] }, rules: [] };
   }
 
+  function isCurrentRulesPayload(payload) {
+    return payload
+      && payload.version === REMOTE_RULES_CURRENT_VERSION
+      && payload.levels
+      && Array.isArray(payload.rules);
+  }
+
   async function loadRemoteRulesCache() {
     const rec = await storageGet(RULES_KEY, null);
-    if (rec && rec.payload && Array.isArray(rec.payload.rules)) {
+    if (rec && isCurrentRulesPayload(rec.payload)) {
       cachedRemoteRules = rec.payload;
       cachedFetchedAt = rec.fetchedAt || 0;
     } else {
@@ -123,7 +131,7 @@
     const res = await fetch(REMOTE_RULES_URL, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const payload = await res.json();
-    if (!payload || !payload.levels || !Array.isArray(payload.rules)) {
+    if (!isCurrentRulesPayload(payload)) {
       throw new Error('invalid_payload');
     }
     const record = { fetchedAt: Date.now(), payload };

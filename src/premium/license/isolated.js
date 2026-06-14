@@ -67,7 +67,8 @@
   // Even on failure, never re-attempt more than once per 5 min. Multi-tab
   // users would otherwise hammer raw.githubusercontent.com per page load.
   const REMOTE_RULES_MIN_RETRY_MS = 5 * 60 * 1000;
-  const REMOTE_RULES_SCHEMA_MAX = 1;
+  const REMOTE_RULES_SCHEMA_MAX = 2;
+  const REMOTE_RULES_CURRENT_VERSION = 2;
 
   const KEY_RE = /^[A-Za-z0-9_\-]{8,128}$/;
 
@@ -382,6 +383,7 @@
 
   function isValidRulesPayload(p) {
     if (!p || typeof p !== 'object') return false;
+    if (p.version !== REMOTE_RULES_CURRENT_VERSION) return false;
     if (!p.levels || typeof p.levels !== 'object') return false;
     if (!Array.isArray(p.rules)) return false;
     if (typeof p.version === 'number' && p.version > REMOTE_RULES_SCHEMA_MAX) return false;
@@ -406,13 +408,14 @@
 
   async function fetchRemoteContentFilterRules({ force = false } = {}) {
     const cached = await safeStorageGet(CONTENT_FILTER_RULES_KEY, null);
+    const cachedValid = cached && isValidRulesPayload(cached.payload);
     const now = Date.now();
     if (!force) {
       // Successful fetch within TTL → skip.
-      if (cached?.fetchedAt && (now - cached.fetchedAt) < REMOTE_RULES_TTL_MS) return;
+      if (cachedValid && cached.fetchedAt && (now - cached.fetchedAt) < REMOTE_RULES_TTL_MS) return;
       // Recent attempt (success or failure) within retry floor → skip so
       // a flapping network or down origin can't trigger a request per page.
-      if (cached?.lastAttemptedAt && (now - cached.lastAttemptedAt) < REMOTE_RULES_MIN_RETRY_MS) return;
+      if (cachedValid && cached.lastAttemptedAt && (now - cached.lastAttemptedAt) < REMOTE_RULES_MIN_RETRY_MS) return;
     }
     let payload = null;
     try {
@@ -433,7 +436,7 @@
         source: 'remote-fresh',
         fetchedAt: record.fetchedAt,
       }, '*');
-    } else if (cached) {
+    } else if (cachedValid) {
       // Failed fetch — keep payload, just record the attempt so we throttle.
       await safeStorageSet({ [CONTENT_FILTER_RULES_KEY]: { ...cached, lastAttemptedAt: now } });
     } else {

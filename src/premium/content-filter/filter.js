@@ -27,6 +27,7 @@
     standard: new Set(['high', 'block']),
     strict: new Set(['medium', 'high', 'block']),
   };
+  const REMOTE_RULES_CURRENT_VERSION = 2;
   const ENDPOINT_MATCHERS = [
     /\/i\/api\/graphql\/[^/]+\/HomeTimeline\b/,
     /\/i\/api\/graphql\/[^/]+\/HomeLatestTimeline\b/,
@@ -49,6 +50,7 @@
 
   function updateRulesFromRemote(payload, label) {
     if (!payload || typeof payload !== 'object') return;
+    if (payload.version !== REMOTE_RULES_CURRENT_VERSION) return;
     if (!payload.levels || !Array.isArray(payload.rules)) return;
     source = createLocalRuleSource(payload);
     rulesSourceLabel = label || 'remote';
@@ -329,7 +331,7 @@
   // Keep this stricter than "Telegram URL exists"; otherwise legitimate
   // creators who mirror posts to Telegram get hidden as url:block.
   function telegramFunnel(raw) {
-    const text = `${raw.content || ''} ${raw.author?.bio || ''}`.toLowerCase();
+    const text = String(raw.content || '').toLowerCase();
     const hasTelegram = /(t\.me|telegram|电报|飞机)/i.test(text);
     const hasFunnel = /(福利(资源|视频|社群|社区|导航|群|频道)|成人(资源|视频)|成人视频|私信(加入|加群|进群|领取|获取)|加(群|频道)|进群|群里.{0,8}(福利|资源|视频|约|广告)|频道.{0,8}(福利|资源|视频|广告)|同城.{0,8}(线下|上门|可约)|线下.{0,8}(约|上门|见面)|上门|约p|约炮|曰泡|宝宝.{0,6}(点这里|主页|私信))/i.test(text);
     return hasTelegram && hasFunnel;
